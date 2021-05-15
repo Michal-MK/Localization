@@ -2,24 +2,18 @@
 
 namespace LocalizationHelper.IElements {
 	public class StdLine : IElement {
-
 		public StdLine(string line = null) {
-			if (line == null) {
-				Line = Environment.NewLine;
-			}
-			else {
-				Line = line;
-			}
+			this.line = line ?? Environment.NewLine;
 		}
 
-		public StdLine(int ID, string localizedText) {
-			Line = $"{ID}:{localizedText}";
+		public StdLine(int id, string localizedText) {
+			line = $"{id}:{localizedText}";
 		}
 
-		public string Line { get; set; }
+		private readonly string line;
 
 		public string GetStr() {
-			return Line;
+			return line;
 		}
 	}
 }

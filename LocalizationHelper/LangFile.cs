@@ -6,9 +6,9 @@ using System.Linq;
 
 namespace LocalizationHelper {
 	public class LangFile : IElement {
-		public string Header { get; set; }
+		private string header;
 
-		public List<IElement> Sections { get; set; } = new();
+		public List<IElement> Sections { get; } = new();
 
 		public static LangFile Parse(string langFilePath) {
 			LangFile ret = new();
@@ -17,7 +17,7 @@ namespace LocalizationHelper {
 
 			int start = 0;
 			if (lines[0].StartsWith("/")) {
-				ret.Header = lines[0];
+				ret.header = lines[0];
 				start = 1;
 			}
 
@@ -34,7 +34,8 @@ namespace LocalizationHelper {
 		}
 
 		public string GetStr() {
-			return (Header != null ? Header + Environment.NewLine : "") + string.Join(Environment.NewLine, Sections.Select(s => s.GetStr()));
+			return (header != null ? header + Environment.NewLine : "") +
+				   string.Join(Environment.NewLine, Sections.Select(s => s.GetStr()));
 		}
 	}
 }

@@ -5,29 +5,25 @@ using System.IO;
 using System.Linq;
 
 namespace LocalizationHelper {
-	public class ClassRep : IElement {
-		public List<string> FirstLines { get; set; } = new();
+	public class ClassFile : IElement {
+		private readonly List<string> firstLines = new();
 
-		public int FirstLineIndex { get; set; }
-
-		public int ClassLength { get; set; }
-
-		public List<IElement> Internals { get; set; } = new List<IElement>();
+		public List<IElement> Internals { get; } = new();
 
 		public string GetStr() {
-			return string.Join(Environment.NewLine, FirstLines) + Environment.NewLine + string.Join(Environment.NewLine, Internals.Select(s => s.GetStr())) + Environment.NewLine;
+			return string.Join(Environment.NewLine, firstLines) + Environment.NewLine +
+				   string.Join(Environment.NewLine, Internals.Select(s => s.GetStr())) + Environment.NewLine;
 		}
 
-		public static ClassRep Parse(string path) {
-			ClassRep ret = new();
+		public static ClassFile Parse(string path) {
+			ClassFile ret = new();
 
 			string[] lines = File.ReadAllLines(path);
 			bool gotClass = false;
 
 			for (int i = 0; i < lines.Length; i++) {
-
 				if (lines[i].TrimStart().StartsWith("public const int ")) {
-					ret.Internals.Add(new IDDef(lines[i]));
+					ret.Internals.Add(new IDLineDef(lines[i]));
 				}
 				else if (lines[i].TrimStart().StartsWith("public class ")) {
 					gotClass = true;
@@ -37,10 +33,9 @@ namespace LocalizationHelper {
 					ret.Internals.Add(new StdLine(lines[i]));
 				}
 				if (!gotClass) {
-					ret.FirstLines.Add(lines[i]);
+					ret.firstLines.Add(lines[i]);
 				}
 			}
-
 			return ret;
 		}
 	}

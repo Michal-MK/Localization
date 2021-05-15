@@ -7,17 +7,15 @@ using System.Text;
 
 namespace LocalizationHelper {
 	public class Localizable {
+		private string csFile;
 
-		public string Name { get; set; }
+		public string Name { get; private set; }
 
-		public string Shortcut { get; set; }
+		public string Shortcut { get; private set; }
 
-		public string CSFile { get; set; }
+		public ClassFile ClassFile { get; private set; }
 
-		public ClassRep ClsRep { get; set; }
-
-		public Dictionary<string, LangFile> LangFiles { get; set; } = new();
-
+		public Dictionary<string, LangFile> LangFiles { get; } = new();
 
 		public static Localizable Parse(List<string> region) {
 			Localizable ret = new();
@@ -25,10 +23,8 @@ namespace LocalizationHelper {
 			string[] split = region[^1].Split(';', StringSplitOptions.RemoveEmptyEntries);
 			ret.Name = split[0];
 			ret.Shortcut = split[1];
-			ret.CSFile = region[^2];
-			ret.ClsRep = ClassRep.Parse(ret.CSFile);
-
-
+			ret.csFile = region[^2];
+			ret.ClassFile = ClassFile.Parse(ret.csFile);
 
 			for (int i = 0; i < region.Count - 2; i++) {
 				ret.LangFiles.Add(region[i], LangFile.Parse(region[i]));
@@ -37,19 +33,21 @@ namespace LocalizationHelper {
 		}
 
 		public void AddSubClass(string trim) {
-			InnerClass ic = new InnerClass(trim);
-			(ClsRep.Internals.First(f => f.GetType() == typeof(InnerClass)) as InnerClass).Internals.Add(new StdLine(""));
-			(ClsRep.Internals.First(f => f.GetType() == typeof(InnerClass)) as InnerClass).Internals.Add(ic);
-			foreach (var item in LangFiles.Values) {
+			InnerClass ic = new(trim);
+			InnerClass parent = (InnerClass) ClassFile.Internals.First(f => f.GetType() == typeof(InnerClass));
+			parent.Internals.Add(new StdLine(""));
+			parent.Internals.Add(ic);
+
+			foreach (LangFile item in LangFiles.Values) {
 				item.Sections.Add(new LangSection("# " + trim));
 			}
 		}
 
 		public void Save() {
-			File.WriteAllText(CSFile, ClsRep.GetStr(), Encoding.UTF8);
+			File.WriteAllText(csFile, ClassFile.GetStr(), Encoding.UTF8);
 
-			foreach (var kv in LangFiles) {
-				File.WriteAllText(kv.Key, kv.Value.GetStr(), Encoding.UTF8);
+			foreach ((string key, LangFile value) in LangFiles) {
+				File.WriteAllText(key, value.GetStr(), Encoding.UTF8);
 			}
 		}
 	}
