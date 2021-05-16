@@ -33,35 +33,53 @@ namespace LocalizationHelper {
 						return;
 					case "!exit":
 						return;
+					case "help":
+						PrintHelp();
+						break;
 				}
 
-				if (line.StartsWith("sel ")) {
-					string trimmed = line.Remove(0, 4);
-					activeLocalizable = ls.Single(w => w.Shortcut == trimmed);
-					Console.WriteLine("Selected Active localizable: " + activeLocalizable.Name);
+				if (line.StartsWith("sell ")) {
+					string trimmed = line.Remove(0, 5);
+					try {
+						activeLocalizable = ls.Single(w => w.Shortcut == trimmed);
+						Console.WriteLine("Selected Active localizable: " + activeLocalizable.Name);
+					}
+					catch (InvalidOperationException) {
+						Console.WriteLine("Could not select " + trimmed);
+					}
 				}
 
-				if (line == "list locales") {
+				if (line == "listl") {
 					Console.WriteLine(string.Join(Environment.NewLine, ls.Select(s => $"{s.Name} -- {s.Shortcut}")));
 				}
 
 				if (activeLocalizable is null) continue;
 
-				if (line == "list class") {
-					Console.WriteLine(string.Join(Environment.NewLine, ((InnerClass) activeLocalizable.ClassFile.Internals[0]).Internals.Where(w => w.GetType() == typeof(InnerClass)).Select(s => ((InnerClass) s).Name)));
+				if (line == "listc") {
+					List<IElement> interns = ((InnerClass) activeLocalizable.ClassFile.Internals[0]).Internals;
+					Console.WriteLine(string.Join(Environment.NewLine, interns
+																	   .Where(w => w.GetType() == typeof(InnerClass))
+																	   .Select(s => ((InnerClass) s).Name)));
 				}
 
-				if (line.StartsWith("add class ")) {
-					string trimmed = line.Remove(0, 3);
+				if (line.StartsWith("addc ")) {
+					string trimmed = line.Remove(0, 5);
 					activeLocalizable.AddSubClass(trimmed);
 					Console.WriteLine("Added subclass: " + trimmed + " to " + activeLocalizable.Name);
 				}
-				if (line.StartsWith("sel class ")) {
-					string trimmed = line.Remove(0, 4);
-					activeInnerClass = ((InnerClass) activeLocalizable.ClassFile.Internals[0])
-									   .Internals
-									   .Where(w => w.GetType() == typeof(InnerClass)).Select(s => (InnerClass) s)
-									   .Single(w => w.Name.ToLower() == trimmed.ToLower());
+
+				if (line.StartsWith("selc ")) {
+					string trimmed = line.Remove(0, 5);
+					try {
+						activeInnerClass = ((InnerClass) activeLocalizable.ClassFile.Internals[0])
+										   .Internals
+										   .Where(w => w.GetType() == typeof(InnerClass)).Select(s => (InnerClass) s)
+										   .Single(w => w.Name.ToLower() == trimmed.ToLower());
+					}
+					catch (InvalidOperationException) {
+						Console.WriteLine("Could not select " + trimmed);
+						break;
+					}
 					Console.WriteLine("Selected Active Inner class: " + trimmed + " of " + activeLocalizable.Name);
 				}
 
@@ -89,6 +107,15 @@ namespace LocalizationHelper {
 					Save(ls);
 				}
 			}
+		}
+
+		private static void PrintHelp() {
+			Console.WriteLine("sel - Select a localizable");
+			Console.WriteLine("list locales - List all localizable");
+			Console.WriteLine("list class - List all classes in a selected localizable");
+			Console.WriteLine("add class - Adds a classes into a selected localizable");
+			Console.WriteLine("save - Saves a localizable");
+			Console.WriteLine("exit - Quits the program");
 		}
 
 		private static List<Localizable> GetLocalizables(string cfgPath) {
