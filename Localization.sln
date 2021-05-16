@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizationHelper", "LocalizationHelper\LocalizationHelper.csproj", "{8F0DFFCD-CF02-44A8-A590-9437B6C5DF56}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Igor.Localization", "Igor.Localization\Igor.Localization.csproj", "{756A8F64-BE62-40B9-968C-664F94746A88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Igor.LocalizationTests", "Igor.LocalizationTests\Igor.LocalizationTests.csproj", "{1322C408-E869-4F65-ABCA-3ADAEEBB793F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{8F0DFFCD-CF02-44A8-A590-9437B6C5DF56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F0DFFCD-CF02-44A8-A590-9437B6C5DF56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F0DFFCD-CF02-44A8-A590-9437B6C5DF56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{756A8F64-BE62-40B9-968C-664F94746A88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{756A8F64-BE62-40B9-968C-664F94746A88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{756A8F64-BE62-40B9-968C-664F94746A88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{756A8F64-BE62-40B9-968C-664F94746A88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1322C408-E869-4F65-ABCA-3ADAEEBB793F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1322C408-E869-4F65-ABCA-3ADAEEBB793F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1322C408-E869-4F65-ABCA-3ADAEEBB793F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1322C408-E869-4F65-ABCA-3ADAEEBB793F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
