@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace LocalizationHelper {
 	public static class Program {
@@ -56,10 +57,10 @@ namespace LocalizationHelper {
 				if (activeLocalizable is null) continue;
 
 				if (line == "listc") {
-					List<IElement> interns = ((InnerClass) activeLocalizable.ClassFile.Internals[0]).Internals;
+					List<IElement> interns = ((InnerClass)activeLocalizable.ClassFile.Internals[0]).Internals;
 					Console.WriteLine(string.Join(Environment.NewLine, interns
 																	   .Where(w => w.GetType() == typeof(InnerClass))
-																	   .Select(s => ((InnerClass) s).Name)));
+																	   .Select(s => ((InnerClass)s).Name)));
 				}
 
 				if (line.StartsWith("addc ")) {
@@ -71,10 +72,23 @@ namespace LocalizationHelper {
 				if (line.StartsWith("selc ")) {
 					string trimmed = line.Remove(0, 5);
 					try {
-						activeInnerClass = ((InnerClass) activeLocalizable.ClassFile.Internals[0])
+						activeInnerClass = ((InnerClass)activeLocalizable.ClassFile.Internals[0])
 										   .Internals
-										   .Where(w => w.GetType() == typeof(InnerClass)).Select(s => (InnerClass) s)
+										   .Where(w => w.GetType() == typeof(InnerClass)).Select(s => (InnerClass)s)
 										   .Single(w => w.Name.ToLower() == trimmed.ToLower());
+
+						foreach ((string _, LangFile value) in activeLocalizable.LangFiles) {
+							List<LangSection> sections = value.Sections
+															  .Where(w => w.GetType() == typeof(LangSection))
+															  .Select(s => (LangSection)s).ToList();
+							try {
+								LangSection _ = sections.Single(w => w.Comment.Remove(0, 2) == activeInnerClass.Name);
+							}
+							catch (Exception) {
+								Console.WriteLine("Could not find LangSection for subclass: " + trimmed);
+								Console.WriteLine("Found only: " + string.Join(", ", sections.Select(s => s.Comment)));
+							}
+						}
 					}
 					catch (InvalidOperationException) {
 						Console.WriteLine("Could not select " + trimmed);
@@ -86,9 +100,8 @@ namespace LocalizationHelper {
 				if (activeInnerClass is null) continue;
 
 				if (line.Contains("|")) {
-					string trimmed = line.Remove(0, 2);
-					string[] split = trimmed.Split('|');
-					string name = split[0];
+					string[] split = line.Split('|');
+					string name = ToConstName(split[0]);
 					int id = r.Next(1000, int.MaxValue);
 
 					Span<string> languages = split.AsSpan(1);
@@ -97,7 +110,7 @@ namespace LocalizationHelper {
 					foreach (LangFile val in activeLocalizable.LangFiles.Values) {
 						val.Sections
 						   .Where(w => w.GetType() == typeof(LangSection))
-						   .Select(s => (LangSection) s)
+						   .Select(s => (LangSection)s)
 						   .Single(w => w.Comment.Remove(0, 2) == activeInnerClass.Name)
 						   .Definitions.Add(new StdLine(id, languages[index]));
 						index++;
@@ -110,10 +123,12 @@ namespace LocalizationHelper {
 		}
 
 		private static void PrintHelp() {
-			Console.WriteLine("sel - Select a localizable");
-			Console.WriteLine("list locales - List all localizable");
-			Console.WriteLine("list class - List all classes in a selected localizable");
-			Console.WriteLine("add class - Adds a classes into a selected localizable");
+			Console.WriteLine("listl - List all localizable");
+			Console.WriteLine("listc - List all classes in a selected localizable");
+			Console.WriteLine("sell - Select a localizable");
+			Console.WriteLine("selc - Selects a classes to work with");
+			Console.WriteLine("addc - Adds a classes into a selected localizable");
+			Console.WriteLine(".+|(.*)+ - Defines new localizable");
 			Console.WriteLine("save - Saves a localizable");
 			Console.WriteLine("exit - Quits the program");
 		}
@@ -142,6 +157,20 @@ namespace LocalizationHelper {
 			foreach (Localizable item in localizables) {
 				item.Save();
 			}
+		}
+
+		private static string ToConstName(string s) {
+			StringBuilder sb = new();
+			sb.Append(char.ToUpper(s[0]));
+
+			for (int i = 1; i < s.Length; i++) {
+				char c = s[i];
+				if (char.IsUpper(c)) {
+					sb.Append("_" + c);
+				}
+				sb.Append(char.ToUpper(c));
+			}
+			return sb.ToString();
 		}
 	}
 }
