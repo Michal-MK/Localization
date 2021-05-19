@@ -16,6 +16,9 @@ namespace LocalizationHelper {
 
 		public static void Main(string[] args) {
 			r = new Random(Environment.TickCount);
+			
+			Console.OutputEncoding = Encoding.Unicode;
+			Console.InputEncoding = Encoding.Unicode;
 
 			List<Localizable> ls = GetLocalizables(CONFIG_PATH);
 
@@ -167,6 +170,7 @@ namespace LocalizationHelper {
 				char c = s[i];
 				if (char.IsUpper(c)) {
 					sb.Append("_" + c);
+					continue;
 				}
 				sb.Append(char.ToUpper(c));
 			}
