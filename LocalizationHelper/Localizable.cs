@@ -1,5 +1,6 @@
 ﻿using LocalizationHelper.IElements;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace LocalizationHelper {
 
 		public void AddSubClass(string trim) {
 			InnerClass ic = new(trim);
-			InnerClass parent = (InnerClass) ClassFile.Internals.First(f => f.GetType() == typeof(InnerClass));
+			InnerClass parent = (InnerClass)ClassFile.Internals.First(f => f.GetType() == typeof(InnerClass));
 			parent.Internals.Add(new StdLine(""));
 			parent.Internals.Add(ic);
 
@@ -49,6 +50,15 @@ namespace LocalizationHelper {
 			foreach ((string key, LangFile value) in LangFiles) {
 				File.WriteAllText(key, value.GetStr(), Encoding.UTF8);
 			}
+		}
+
+		public IEnumerable<(IDLineDef, IDLineDef)> FindContaining(string query) {
+			List<IDLineDef> list = LangFiles.Values
+											.SelectMany(s => s.Sections, (file, element) => element)
+											.Cast<IDLineDef>().ToList();
+			
+			
+			return default;
 		}
 	}
 }

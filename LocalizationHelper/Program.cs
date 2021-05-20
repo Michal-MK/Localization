@@ -54,26 +54,26 @@ namespace LocalizationHelper {
 					}
 				}
 
-				if (line == "listl") {
+				if (line == "lsl") {
 					Console.WriteLine(string.Join(Environment.NewLine, ls.Select(s => $"{s.Name} -- {s.Shortcut}")));
 				}
 
 				if (activeLocalizable is null) continue;
 
-				if (line == "listc") {
+				if (line == "lsc") {
 					List<IElement> interns = ((InnerClass)activeLocalizable.ClassFile.Internals[0]).Internals;
 					Console.WriteLine(string.Join(Environment.NewLine, interns
 																	   .Where(w => w.GetType() == typeof(InnerClass))
 																	   .Select(s => ((InnerClass)s).Name)));
 				}
 
-				if (line.StartsWith("addc ")) {
+				if (line.StartsWith("ac ")) {
 					string trimmed = line.Remove(0, 5);
 					activeLocalizable.AddSubClass(trimmed);
 					Console.WriteLine("Added subclass: " + trimmed + " to " + activeLocalizable.Name);
 				}
 
-				if (line.StartsWith("selc ")) {
+				if (line.StartsWith("sc ")) {
 					string trimmed = line.Remove(0, 5);
 					try {
 						activeInnerClass = ((InnerClass)activeLocalizable.ClassFile.Internals[0])
@@ -99,6 +99,11 @@ namespace LocalizationHelper {
 						break;
 					}
 					Console.WriteLine("Selected Active Inner class: " + trimmed + " of " + activeLocalizable.Name);
+				}
+
+				if (line.StartsWith("f ")) {
+					string query = line.Remove(0, 2);
+					FindAll(query);
 				}
 
 				if (activeInnerClass is null) continue;
@@ -197,6 +202,14 @@ namespace LocalizationHelper {
 
 		private static bool ContainsSmartFormatTags(string line) {
 			return line.Any(c => c == '\n') || line.Contains("{0}");
+		}
+
+		private static void FindAll(string query) {
+			IEnumerable<(IDLineDef, IDLineDef)> lines = activeLocalizable.FindContaining(query);
+			Console.WriteLine("Found:");
+			foreach ((IDLineDef cls, IDLineDef lang) in lines) {
+				Console.WriteLine("\t" + cls.GetStr() + " == " + lang.GetStr());
+			}
 		}
 	}
 }
