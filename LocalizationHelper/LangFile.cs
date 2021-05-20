@@ -6,10 +6,6 @@ using System.Linq;
 
 namespace LocalizationHelper {
 	public class LangFile : IElement {
-		private string header;
-
-		public List<IElement> Sections { get; } = new();
-
 		public static LangFile Parse(string langFilePath) {
 			LangFile ret = new();
 
@@ -26,11 +22,21 @@ namespace LocalizationHelper {
 					ret.Sections.Add(new StdLine(lines[i]));
 				}
 				else if (lines[i].TrimStart().StartsWith("#")) {
-					ret.Sections.Add(LangSection.Parse(ref i, lines));
+					ret.Sections.Add(LangSection.Parse(langFilePath, ref i, lines));
 				}
 			}
 
 			return ret;
+		}
+
+		public List<IElement> Sections { get; } = new();
+
+		private string header;
+
+		public IEnumerable<IDLineDef> FindAll(string query) {
+			return Sections.Where(w => w.GetType() == typeof(LangSection))
+						   .Cast<LangSection>()
+						   .SelectMany(s => s.FindAllDefinitions(query));
 		}
 
 		public string GetStr() {

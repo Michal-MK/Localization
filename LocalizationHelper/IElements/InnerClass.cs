@@ -4,23 +4,25 @@ using System.Linq;
 
 namespace LocalizationHelper.IElements {
 	public class InnerClass : IElement {
-		public InnerClass(string name) {
+		public InnerClass(string fileName, string name) {
 			firstLine = "\t\tpublic class " + name + " {";
 			Name = name;
+			FileName = fileName;
 			lastLine = "\t\t}";
 		}
 
-		public InnerClass(ref int i, string[] lines) {
+		public InnerClass(string fileName, ref int i, string[] lines) {
 			firstLine = lines[i];
 			Name = firstLine.Trim().Replace("public class ", "").Replace(" {", "");
 			i++;
-
+			FileName = fileName;
+			
 			while (i < lines.Length && lines[i].Trim() != "}") {
 				if (lines[i].TrimStart().StartsWith("public const int ")) {
-					Internals.Add(new IDLineDef(lines[i]));
+					Internals.Add(new IDLineDef(fileName, Name, lines[i]));
 				}
 				else if (lines[i].TrimStart().StartsWith("public class ")) {
-					Internals.Add(new InnerClass(ref i, lines));
+					Internals.Add(new InnerClass(fileName, ref i, lines));
 				}
 				else {
 					Internals.Add(new StdLine(lines[i]));
@@ -29,14 +31,26 @@ namespace LocalizationHelper.IElements {
 			}
 			lastLine = lines[i];
 		}
-
+		
+		public string FileName { get; }
+		public string Name { get; }
+		public List<IElement> Internals { get; } = new();
+		
 		private readonly string firstLine;
 		private readonly string lastLine;
+		
+		public IEnumerable<IDLineDef> FindAllDefinitions(string query) {
+			IEnumerable<IDLineDef> ret = new List<IDLineDef>();
+			ret = Internals.Where(w => w.GetType() == typeof(IDLineDef))
+						   .Cast<IDLineDef>().Concat(ret);
 
-		public string Name { get; }
+			ret = Internals.Where(w => w.GetType() == typeof(InnerClass))
+						   .Cast<InnerClass>().SelectMany(s => s.FindAllDefinitions(query))
+						   .Concat(ret);
 
-		public List<IElement> Internals { get; } = new();
-
+			return ret;
+		}
+		
 		public string GetStr() {
 			return firstLine + Environment.NewLine +
 				   string.Join(Environment.NewLine, Internals.Select(s => s.GetStr())) + Environment.NewLine +

@@ -2,22 +2,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace LocalizationHelper {
 	public class Localizable {
-		private string csFile;
-
-		public string Name { get; private set; }
-
-		public string Shortcut { get; private set; }
-
-		public ClassFile ClassFile { get; private set; }
-
-		public Dictionary<string, LangFile> LangFiles { get; } = new();
-
 		public static Localizable Parse(List<string> region) {
 			Localizable ret = new();
 
@@ -32,33 +23,45 @@ namespace LocalizationHelper {
 			}
 			return ret;
 		}
+		
+		public string Name { get; private set; }
+		public string Shortcut { get; private set; }
+		public ClassFile ClassFile { get; private set; }
+		public Dictionary<string, LangFile> LangFiles { get; } = new();
+		
+		private string csFile;
 
 		public void AddSubClass(string trim) {
-			InnerClass ic = new(trim);
 			InnerClass parent = (InnerClass)ClassFile.Internals.First(f => f.GetType() == typeof(InnerClass));
+			InnerClass ic = new(parent.FileName, trim);
+
 			parent.Internals.Add(new StdLine(""));
 			parent.Internals.Add(ic);
 
 			foreach (LangFile item in LangFiles.Values) {
-				item.Sections.Add(new LangSection("# " + trim));
+				item.Sections.Add(new LangSection(ClassFile.FilePath, "# " + trim));
 			}
 		}
+		
+		public IEnumerable<(IDLineDef, IDLineDef)> FindContaining(string query) {
+			List<IDLineDef> definitionsMatchingQuery = LangFiles.Values.SelectMany(s => s.FindAll(query)).ToList();
 
+			List<(IDLineDef, IDLineDef)> ret = new();
+			IEnumerable<InnerClass> inner = ClassFile.Internals.Where(w => w.GetType() == typeof(InnerClass)).Cast<InnerClass>().ToList();
+
+			foreach (IDLineDef id in definitionsMatchingQuery) {
+				IDLineDef clsId = inner.Select(s => s.FindAllDefinitions("query").Single(w => w.ID == id.ID)).Single();
+				ret.Add((id, clsId));
+			}
+			return ret;
+		}
+		
 		public void Save() {
 			File.WriteAllText(csFile, ClassFile.GetStr(), Encoding.UTF8);
 
 			foreach ((string key, LangFile value) in LangFiles) {
 				File.WriteAllText(key, value.GetStr(), Encoding.UTF8);
 			}
-		}
-
-		public IEnumerable<(IDLineDef, IDLineDef)> FindContaining(string query) {
-			List<IDLineDef> list = LangFiles.Values
-											.SelectMany(s => s.Sections, (file, element) => element)
-											.Cast<IDLineDef>().ToList();
-			
-			
-			return default;
 		}
 	}
 }

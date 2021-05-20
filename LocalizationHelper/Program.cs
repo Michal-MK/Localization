@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ConsoleTables;
 using TextCopy;
 
 namespace LocalizationHelper {
@@ -41,10 +42,13 @@ namespace LocalizationHelper {
 					case "help":
 						PrintHelp();
 						break;
+					case "cls":
+						Console.Clear();
+						break;
 				}
 
-				if (line.StartsWith("sell ")) {
-					string trimmed = line.Remove(0, 5);
+				if (line.StartsWith("sl ")) {
+					string trimmed = line.Remove(0, 3);
 					try {
 						activeLocalizable = ls.Single(w => w.Shortcut == trimmed);
 						Console.WriteLine("Selected Active localizable: " + activeLocalizable.Name);
@@ -58,6 +62,11 @@ namespace LocalizationHelper {
 					Console.WriteLine(string.Join(Environment.NewLine, ls.Select(s => $"{s.Name} -- {s.Shortcut}")));
 				}
 
+				if (line.StartsWith("f ")) {
+					string query = line.Remove(0, 2);
+					FindAll(ls, query);
+				}
+
 				if (activeLocalizable is null) continue;
 
 				if (line == "lsc") {
@@ -68,13 +77,13 @@ namespace LocalizationHelper {
 				}
 
 				if (line.StartsWith("ac ")) {
-					string trimmed = line.Remove(0, 5);
+					string trimmed = line.Remove(0, 3);
 					activeLocalizable.AddSubClass(trimmed);
 					Console.WriteLine("Added subclass: " + trimmed + " to " + activeLocalizable.Name);
 				}
 
 				if (line.StartsWith("sc ")) {
-					string trimmed = line.Remove(0, 5);
+					string trimmed = line.Remove(0, 3);
 					try {
 						activeInnerClass = ((InnerClass)activeLocalizable.ClassFile.Internals[0])
 										   .Internals
@@ -101,11 +110,6 @@ namespace LocalizationHelper {
 					Console.WriteLine("Selected Active Inner class: " + trimmed + " of " + activeLocalizable.Name);
 				}
 
-				if (line.StartsWith("f ")) {
-					string query = line.Remove(0, 2);
-					FindAll(query);
-				}
-
 				if (activeInnerClass is null) continue;
 
 				if (line.Contains("|")) {
@@ -114,7 +118,7 @@ namespace LocalizationHelper {
 					int id = r.Next(1000, int.MaxValue);
 
 					Span<string> languages = split.AsSpan(1);
-					activeInnerClass.Internals.Add(new IDLineDef(name, id));
+					activeInnerClass.Internals.Add(new IDLineDef(activeLocalizable.ClassFile.FilePath, activeInnerClass.Name, name, id));
 					int index = 0;
 					foreach (LangFile val in activeLocalizable.LangFiles.Values) {
 						val.Sections
@@ -139,14 +143,17 @@ namespace LocalizationHelper {
 		}
 
 		private static void PrintHelp() {
-			Console.WriteLine("listl - List all localizable");
-			Console.WriteLine("listc - List all classes in a selected localizable");
-			Console.WriteLine("sell - Select a localizable");
-			Console.WriteLine("selc - Selects a classes to work with");
-			Console.WriteLine("addc - Adds a classes into a selected localizable");
+			Console.WriteLine("lsl - Lists all localizable");
+			Console.WriteLine("lsc - Lists all classes in a selected localizable");
+			Console.WriteLine("sl - Selects a localizable");
+			Console.WriteLine("sc - Selects a class to work with");
+			Console.WriteLine("ac - Adds a class into a selected localizable");
 			Console.WriteLine(".+|(.*)+ - Defines new localizable");
 			Console.WriteLine("save - Saves a localizable");
-			Console.WriteLine("exit - Quits the program");
+			Console.WriteLine("help - Prints this message");
+			Console.WriteLine("cls - Clears the console");
+			Console.WriteLine("exit - Quits the program saving all changes");
+			Console.WriteLine("exit - Quits the program WITHOUT saving");
 		}
 
 		private static List<Localizable> GetLocalizables(string cfgPath) {
@@ -204,12 +211,19 @@ namespace LocalizationHelper {
 			return line.Any(c => c == '\n') || line.Contains("{0}");
 		}
 
-		private static void FindAll(string query) {
-			IEnumerable<(IDLineDef, IDLineDef)> lines = activeLocalizable.FindContaining(query);
+		private static void FindAll(List<Localizable> ls, string query) {
+			IEnumerable<(IDLineDef, IDLineDef)> lines = new List<(IDLineDef, IDLineDef)>();
+			lines = ls.Aggregate(lines, (current, l) => l.FindContaining(query).Concat(current));
+
 			Console.WriteLine("Found:");
-			foreach ((IDLineDef cls, IDLineDef lang) in lines) {
-				Console.WriteLine("\t" + cls.GetStr() + " == " + lang.GetStr());
-			}
+			ConsoleTable ct = new("Class File:", "Lang File:");
+
+			lines.Select(s => new object[] {
+				s.Item2.FileName + " -> " + s.Item2.Parent + " -> " + s.Item2.GetStr().TrimStart(),
+				s.Item1.GetStr()
+			}).ForEach(f => ct.AddRow(f));
+
+			ct.Write();
 		}
 	}
 }
