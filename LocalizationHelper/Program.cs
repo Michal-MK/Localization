@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using TextCopy;
 
 namespace LocalizationHelper {
 	public static class Program {
@@ -16,7 +17,7 @@ namespace LocalizationHelper {
 
 		public static void Main(string[] args) {
 			r = new Random(Environment.TickCount);
-			
+
 			Console.OutputEncoding = Encoding.Unicode;
 			Console.InputEncoding = Encoding.Unicode;
 
@@ -120,6 +121,13 @@ namespace LocalizationHelper {
 					}
 
 					Console.WriteLine("Added localization!");
+					string classPath = ReconstructClassPath();
+					if (ContainsSmartFormatTags(line)) {
+						new Clipboard().SetText($"LocaleProvider.Instance.SmartFormat({classPath}.{name}, );");
+					}
+					else {
+						new Clipboard().SetText($"LocaleProvider.Instance.Get({classPath}.{name});");
+					}
 					Save(ls);
 				}
 			}
@@ -175,6 +183,20 @@ namespace LocalizationHelper {
 				sb.Append(char.ToUpper(c));
 			}
 			return sb.ToString();
+		}
+
+		private static string ReconstructClassPath() {
+			string completeClassName = ((InnerClass)activeLocalizable.ClassFile.Internals
+																	 .First(f => f.GetType() == typeof(InnerClass))).Name;
+			int colonIndex = completeClassName.IndexOf(':');
+			if (colonIndex != -1) {
+				completeClassName = completeClassName.Remove(colonIndex - 1);
+			}
+			return completeClassName + "." + activeInnerClass.Name;
+		}
+
+		private static bool ContainsSmartFormatTags(string line) {
+			return line.Any(c => c == '\n') || line.Contains("{0}");
 		}
 	}
 }
