@@ -88,7 +88,7 @@ namespace LocalizationHelper {
 						activeInnerClass = ((InnerClass)activeLocalizable.ClassFile.Internals[0])
 										   .Internals
 										   .Where(w => w.GetType() == typeof(InnerClass)).Select(s => (InnerClass)s)
-										   .Single(w => w.Name.ToLower() == trimmed.ToLower());
+										   .Single(w => w.Name.ToLower().Contains(trimmed.ToLower()));
 
 						foreach ((string _, LangFile value) in activeLocalizable.LangFiles) {
 							List<LangSection> sections = value.Sections
@@ -104,7 +104,7 @@ namespace LocalizationHelper {
 						}
 					}
 					catch (InvalidOperationException) {
-						Console.WriteLine("Could not select " + trimmed);
+						Console.WriteLine("Could not select " + trimmed+ ", either does not exist or the name is not unique!");
 						continue;
 					}
 					Console.WriteLine("Selected Active Inner class: " + trimmed + " of " + activeLocalizable.Name);
