@@ -105,7 +105,7 @@ namespace LocalizationHelper {
 					}
 					catch (InvalidOperationException) {
 						Console.WriteLine("Could not select " + trimmed);
-						break;
+						continue;
 					}
 					Console.WriteLine("Selected Active Inner class: " + trimmed + " of " + activeLocalizable.Name);
 				}
