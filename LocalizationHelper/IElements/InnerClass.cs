@@ -13,7 +13,10 @@ namespace LocalizationHelper.IElements {
 
 		public InnerClass(string fileName, ref int i, string[] lines) {
 			firstLine = lines[i];
-			Name = firstLine.Trim().Replace("public class ", "").Replace(" {", "");
+			Name = firstLine.Split(":")[0]
+							.Trim()
+							.Replace("public class ", "")
+							.Replace(" {", "");
 			i++;
 			FileName = fileName;
 			

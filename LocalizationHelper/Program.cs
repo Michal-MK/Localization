@@ -107,7 +107,7 @@ namespace LocalizationHelper {
 						Console.WriteLine("Could not select " + trimmed+ ", either does not exist or the name is not unique!");
 						continue;
 					}
-					Console.WriteLine("Selected Active Inner class: " + trimmed + " of " + activeLocalizable.Name);
+					Console.WriteLine("Selected Active Inner class: " + activeInnerClass.Name + " of " + activeLocalizable.Name);
 				}
 
 				if (activeInnerClass is null) continue;
