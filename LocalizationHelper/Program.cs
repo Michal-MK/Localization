@@ -112,6 +112,10 @@ namespace LocalizationHelper {
 
 				if (activeInnerClass is null) continue;
 
+				if (line == "lso") {
+					Console.WriteLine(string.Join(", ", activeLocalizable.LangFiles.Keys.Select(Path.GetFileNameWithoutExtension)));
+				}
+
 				if (line.Contains("|")) {
 					string[] split = line.Split('|');
 					string name = ToConstName(split[0]);
