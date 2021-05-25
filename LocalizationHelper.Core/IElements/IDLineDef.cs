@@ -1,4 +1,4 @@
-﻿namespace LocalizationHelper.IElements {
+﻿namespace LocalizationHelper.Core.IElements {
 	public class IDLineDef : IElement {
 		public IDLineDef(string classFileFilePath, string parentName, string name, int id) {
 			line = $"\t\t\tpublic const int {name} = {id};";

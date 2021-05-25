@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ConsoleTables;
-using LocalizationHelper.IElements;
+using LocalizationHelper.Core.IElements;
 using TextCopy;
 
-namespace LocalizationHelper {
+namespace LocalizationHelper.Core {
 	public class Main {
 		private static Localizable activeLocalizable;
 		private static InnerClass activeInnerClass;

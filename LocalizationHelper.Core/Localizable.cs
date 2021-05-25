@@ -1,13 +1,11 @@
-﻿using LocalizationHelper.IElements;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using LocalizationHelper.Core.IElements;
 
-namespace LocalizationHelper {
+namespace LocalizationHelper.Core {
 	public class Localizable {
 		public static Localizable Parse(List<string> region) {
 			Localizable ret = new();

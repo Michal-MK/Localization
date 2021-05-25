@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LocalizationHelper.IElements {
+namespace LocalizationHelper.Core.IElements {
 	public class StdLine : IElement {
 		public StdLine(string line = null) {
 			this.line = line ?? Environment.NewLine;

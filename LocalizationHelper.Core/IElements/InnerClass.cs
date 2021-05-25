@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LocalizationHelper.IElements {
+namespace LocalizationHelper.Core.IElements {
 	public class InnerClass : IElement {
 		public InnerClass(string fileName, string name) {
 			firstLine = "\t\tpublic class " + name + " {";

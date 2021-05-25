@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace LocalizationHelper.IElements {
+namespace LocalizationHelper.Core.IElements {
 	public class LangSection : IElement {
 		public LangSection(string fileName, string comment) {
 			Comment = comment;

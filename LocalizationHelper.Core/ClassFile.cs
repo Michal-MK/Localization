@@ -1,10 +1,10 @@
-﻿using LocalizationHelper.IElements;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using LocalizationHelper.Core.IElements;
 
-namespace LocalizationHelper {
+namespace LocalizationHelper.Core {
 	public class ClassFile : IElement {
 		
 		private ClassFile(string filePath) {

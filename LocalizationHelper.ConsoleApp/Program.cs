@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using LocalizationHelper.Core;
 
-namespace LocalizationHelper {
+namespace LocalizationHelper.ConsoleApp {
 	public static class Program {
 		private const string CONFIG_PATH = "private/locales.txt";
 
