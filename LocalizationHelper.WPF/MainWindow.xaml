@@ -6,7 +6,47 @@
         xmlns:local="clr-namespace:LocalizationHelper.WPF"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
 
-    </Grid>
+	<Window.DataContext>
+		<local:WindowViewModel/>
+	</Window.DataContext>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="auto"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="auto"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+
+		<Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="0">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="auto"/>
+				<RowDefinition Height="auto"/>
+				<RowDefinition/>
+			</Grid.RowDefinitions>
+			<UniformGrid Columns="1" Grid.Row="1" x:Name="LocalizablesGrid"/>
+			<UniformGrid Columns="1" Grid.Row="2" x:Name="SubClassesGrid"/>
+		</Grid>
+
+		<TextBlock Grid.Row="0" Text="{Binding OutputText}"/>
+
+		<Grid Grid.Row="1" Grid.Column="1">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="auto"/>
+				<ColumnDefinition/>
+				<ColumnDefinition Width="auto"/>
+			</Grid.ColumnDefinitions>
+			<StackPanel Orientation="Horizontal">
+				<ToggleButton Content="Search" Command="{Binding SearchClicked}"/>
+				<ToggleButton Content="Define" Command="{Binding DefineClicked}"/>
+			</StackPanel>
+
+			<TextBox Text="{Binding InputText}" Grid.Column="1"/>
+
+			<Button Content="DO" Command="{Binding ActionCommand}" Grid.Column="2" IsDefault="True"/>
+		</Grid>
+	</Grid>
 </Window>

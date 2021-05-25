@@ -6,4 +6,8 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LocalizationHelper.Core\LocalizationHelper.Core.csproj" />
+  </ItemGroup>
+
 </Project>

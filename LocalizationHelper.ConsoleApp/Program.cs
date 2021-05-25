@@ -14,7 +14,7 @@ namespace LocalizationHelper.ConsoleApp {
 
 			List<Localizable> ls = GetLocalizables(CONFIG_PATH);
 
-			Main m = new(ls);
+			Main m = new(ls, Console.Out);
 
 			while (true) {
 				Console.Write("> ");

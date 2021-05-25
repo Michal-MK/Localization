@@ -14,9 +14,11 @@ namespace LocalizationHelper.Core {
 
 		private readonly Random r = new(Environment.TickCount);
 		private readonly List<Localizable> ls;
+		private readonly TextWriter outStream;
 
-		public Main(List<Localizable> localizables) {
+		public Main(List<Localizable> localizables, TextWriter output) {
 			ls = localizables;
+			outStream = output;
 		}
 
 		public void Handle(string line) {
@@ -25,7 +27,7 @@ namespace LocalizationHelper.Core {
 			switch (line) {
 				case "save":
 					Save(ls);
-					Console.WriteLine("Saved!");
+					outStream.WriteLine("Saved!");
 					break;
 				case "exit":
 					Save(ls);
@@ -44,15 +46,15 @@ namespace LocalizationHelper.Core {
 				string trimmed = line.Remove(0, 3);
 				try {
 					activeLocalizable = ls.Single(w => w.Shortcut == trimmed);
-					Console.WriteLine("Selected Active localizable: " + activeLocalizable.Name);
+					outStream.WriteLine("Selected Active localizable: " + activeLocalizable.Name);
 				}
 				catch (InvalidOperationException) {
-					Console.WriteLine("Could not select " + trimmed);
+					outStream.WriteLine("Could not select " + trimmed);
 				}
 			}
 
 			if (line == "lsl") {
-				Console.WriteLine(string.Join(Environment.NewLine, ls.Select(s => $"{s.Name} -- {s.Shortcut}")));
+				outStream.WriteLine(string.Join(Environment.NewLine, ls.Select(s => $"{s.Name} -- {s.Shortcut}")));
 			}
 
 			if (line.StartsWith("f ")) {
@@ -64,7 +66,7 @@ namespace LocalizationHelper.Core {
 
 			if (line == "lsc") {
 				List<IElement> interns = ((InnerClass)activeLocalizable.ClassFile.Internals[0]).Internals;
-				Console.WriteLine(string.Join(Environment.NewLine, interns
+				outStream.WriteLine(string.Join(Environment.NewLine, interns
 																   .Where(w => w.GetType() == typeof(InnerClass))
 																   .Select(s => ((InnerClass)s).Name)));
 			}
@@ -72,7 +74,7 @@ namespace LocalizationHelper.Core {
 			if (line.StartsWith("ac ")) {
 				string trimmed = line.Remove(0, 3);
 				activeLocalizable.AddSubClass(trimmed);
-				Console.WriteLine("Added subclass: " + trimmed + " to " + activeLocalizable.Name);
+				outStream.WriteLine("Added subclass: " + trimmed + " to " + activeLocalizable.Name);
 			}
 
 			if (line.StartsWith("sc ")) {
@@ -91,22 +93,22 @@ namespace LocalizationHelper.Core {
 							LangSection _ = sections.Single(w => w.Comment.Remove(0, 2) == activeInnerClass.Name);
 						}
 						catch (Exception) {
-							Console.WriteLine("Could not find LangSection for subclass: " + trimmed);
-							Console.WriteLine("Found only: " + string.Join(", ", sections.Select(s => s.Comment)));
+							outStream.WriteLine("Could not find LangSection for subclass: " + trimmed);
+							outStream.WriteLine("Found only: " + string.Join(", ", sections.Select(s => s.Comment)));
 						}
 					}
 				}
 				catch (InvalidOperationException) {
-					Console.WriteLine("Could not select " + trimmed + ", either does not exist or the name is not unique!");
+					outStream.WriteLine("Could not select " + trimmed + ", either does not exist or the name is not unique!");
 					return;
 				}
-				Console.WriteLine("Selected Active Inner class: " + activeInnerClass.Name + " of " + activeLocalizable.Name);
+				outStream.WriteLine("Selected Active Inner class: " + activeInnerClass.Name + " of " + activeLocalizable.Name);
 			}
 
 			if (activeInnerClass is null) return;
 
 			if (line == "lso") {
-				Console.WriteLine(string.Join(", ", activeLocalizable.LangFiles.Keys.Select(Path.GetFileNameWithoutExtension)));
+				outStream.WriteLine(string.Join(", ", activeLocalizable.LangFiles.Keys.Select(Path.GetFileNameWithoutExtension)));
 			}
 
 			if (line.Contains("|")) {
@@ -126,7 +128,7 @@ namespace LocalizationHelper.Core {
 					index++;
 				}
 
-				Console.WriteLine("Added localization!");
+				outStream.WriteLine("Added localization!");
 				string classPath = ReconstructClassPath();
 				if (ContainsSmartFormatTags(line)) {
 					new Clipboard().SetText($"LocaleProvider.Instance.SmartFormat({classPath}.{name}, );");
@@ -138,27 +140,27 @@ namespace LocalizationHelper.Core {
 			}
 		}
 
-		private static void PrintHelp() {
-			Console.WriteLine("lsl - Lists all localizable");
-			Console.WriteLine("lsc - Lists all classes in a selected localizable");
-			Console.WriteLine("sl - Selects a localizable");
-			Console.WriteLine("sc - Selects a class to work with");
-			Console.WriteLine("ac - Adds a class into a selected localizable");
-			Console.WriteLine(".+|(.*)+ - Defines new localizable");
-			Console.WriteLine("save - Saves a localizable");
-			Console.WriteLine("help - Prints this message");
-			Console.WriteLine("cls - Clears the console");
-			Console.WriteLine("exit - Quits the program saving all changes");
-			Console.WriteLine("exit - Quits the program WITHOUT saving");
+		private void PrintHelp() {
+			outStream.WriteLine("lsl - Lists all localizable");
+			outStream.WriteLine("lsc - Lists all classes in a selected localizable");
+			outStream.WriteLine("sl - Selects a localizable");
+			outStream.WriteLine("sc - Selects a class to work with");
+			outStream.WriteLine("ac - Adds a class into a selected localizable");
+			outStream.WriteLine(".+|(.*)+ - Defines new localizable");
+			outStream.WriteLine("save - Saves a localizable");
+			outStream.WriteLine("help - Prints this message");
+			outStream.WriteLine("cls - Clears the console");
+			outStream.WriteLine("exit - Quits the program saving all changes");
+			outStream.WriteLine("exit - Quits the program WITHOUT saving");
 		}
 
-		private static void Save(IEnumerable<Localizable> localizables) {
+		private void Save(IEnumerable<Localizable> localizables) {
 			foreach (Localizable item in localizables) {
 				item.Save();
 			}
 		}
 
-		private static string ToConstName(string s) {
+		private string ToConstName(string s) {
 			StringBuilder sb = new();
 			sb.Append(char.ToUpper(s[0]));
 
@@ -173,7 +175,7 @@ namespace LocalizationHelper.Core {
 			return sb.ToString();
 		}
 
-		private static string ReconstructClassPath() {
+		private string ReconstructClassPath() {
 			string completeClassName = ((InnerClass)activeLocalizable.ClassFile.Internals
 																	 .First(f => f.GetType() == typeof(InnerClass))).Name;
 			int colonIndex = completeClassName.IndexOf(':');
@@ -183,23 +185,14 @@ namespace LocalizationHelper.Core {
 			return completeClassName + "." + activeInnerClass.Name;
 		}
 
-		private static bool ContainsSmartFormatTags(string line) {
+		private bool ContainsSmartFormatTags(string line) {
 			return line.Any(c => c == '\n') || line.Contains("{0}");
 		}
 
-		private static void FindAll(List<Localizable> ls, string query) {
+		private IEnumerable<(IDLineDef, IDLineDef)> FindAll(List<Localizable> ls, string query) {
 			IEnumerable<(IDLineDef, IDLineDef)> lines = new List<(IDLineDef, IDLineDef)>();
 			lines = ls.Aggregate(lines, (current, l) => l.FindContaining(query).Concat(current));
-
-			Console.WriteLine("Found:");
-			ConsoleTable ct = new("Class File:", "Lang File:");
-
-			lines.Select(s => new object[] {
-				s.Item2.FileName + " -> " + s.Item2.Parent + " -> " + s.Item2.GetStr().TrimStart(),
-				s.Item1.GetStr()
-			}).ForEach(f => ct.AddRow(f));
-
-			ct.Write();
+			return lines;
 		}
 	}
 }
