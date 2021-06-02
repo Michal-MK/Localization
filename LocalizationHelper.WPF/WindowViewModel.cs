@@ -3,9 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace LocalizationHelper.WPF {
@@ -23,6 +20,8 @@ namespace LocalizationHelper.WPF {
 		public ICommand DefineClicked { get => defineClicked; set { defineClicked = value; Notify(nameof(DefineClicked)); } }
 		public ICommand ActionCommand { get => actionCommand; set { actionCommand = value; Notify(nameof(ActionCommand)); } }
 
+		public List<Localizable> Localizables { get; }
+
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		private const string CONFIG_PATH = "private/locales.txt";
@@ -30,7 +29,6 @@ namespace LocalizationHelper.WPF {
 		private InputType currentInputType;
 		private readonly Main localizationCore;
 		private readonly MemoryStream ms = new();
-		private readonly StreamWriter writer;
 
 		private void Notify(string name) {
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -40,9 +38,8 @@ namespace LocalizationHelper.WPF {
 			SearchClicked = new Command(SearchAction);
 			DefineClicked = new Command(DefineAction);
 			ActionCommand = new Command(DoAction);
-			List<Localizable> localizables = GetLocalizables(CONFIG_PATH);
-			writer = new(ms);
-			localizationCore = new Main(localizables, writer);
+			Localizables = GetLocalizables(CONFIG_PATH);
+			localizationCore = new Main(Localizables);
 		}
 
 		private static List<Localizable> GetLocalizables(string cfgPath) {
@@ -68,11 +65,11 @@ namespace LocalizationHelper.WPF {
 		#region Actions
 
 		public void OnLocalizableButtonClicked(int index) {
-
+			OutputText = localizationCore.Handle("sl " + Localizables[index].Shortcut);
 		}
 
-		public void OnSubClassButtonClicked(int index) {
-
+		public void OnSubClassButtonClicked(string subclassName) {
+			OutputText = localizationCore.Handle("sc " + subclassName);
 		}
 
 		private void SearchAction(object _) {

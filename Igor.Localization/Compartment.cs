@@ -24,14 +24,12 @@ namespace Igor.Localization {
 		}
 
 		public string Str { get; }
+		public bool IsArgument { get; set; }
+		public bool Plain => !IsArgument && !IsBackReference(out _);
 
 		private string[] Split => Str.Split(':', '|');
 
-		public string ProcessedString { get; private set; }
-
-		public bool IsArgument { get; set; }
-
-		public object UsedArg { get; set; }
+		private string ProcessedString { get; set; }
 
 		private bool HasID => IsArgument && Split.Length > 0 && int.TryParse(Split[0], out _);
 
@@ -49,8 +47,6 @@ namespace Igor.Localization {
 			return IsArgument && Str.Length > 1 && Str[0] == 'r' && numericEnd;
 		}
 
-		public bool Plain => !IsArgument && !IsBackReference(out _);
-
 		public override string ToString() {
 			return Str;
 		}
@@ -66,7 +62,6 @@ namespace Igor.Localization {
 				for (int i = 1; i < Split.Length; i += 2) {
 					LocalizationRule rule = new LocalizationRule { Match = Split[i], Result = Split[i + 1] };
 					if (rule.IsMatch(arg.ToString())) {
-						UsedArg = arg;
 						return ProcessedString = PostProcess(rule.Result, args); ;
 					}
 				}
@@ -78,7 +73,6 @@ namespace Igor.Localization {
 					for (int i = 1; i < Split.Length; i += 2) {
 						LocalizationRule rule = new LocalizationRule { Match = Split[i], Result = Split[i + 1] };
 						if (rule.IsMatch(arg.ToString())) {
-							UsedArg = arg;
 							return ProcessedString = PostProcess(rule.Result, args);
 						}
 					}
@@ -103,7 +97,7 @@ namespace Igor.Localization {
 
 		private static Compartment FindOrigin(int refID, IEnumerable<Compartment> parts) {
 			List<Compartment> cmp = parts.Where(w => w.HasID && w.ID == refID)
-												.ToList();
+										 .ToList();
 			if (cmp.Count != 1) {
 				throw new InvalidOperationException("REF ID NOT FOUND!");
 			}

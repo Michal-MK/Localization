@@ -21,12 +21,12 @@ namespace LocalizationHelper.Core {
 			}
 			return ret;
 		}
-		
+
 		public string Name { get; private set; }
 		public string Shortcut { get; private set; }
 		public ClassFile ClassFile { get; private set; }
 		public Dictionary<string, LangFile> LangFiles { get; } = new();
-		
+
 		private string csFile;
 
 		public void AddSubClass(string trim) {
@@ -40,7 +40,7 @@ namespace LocalizationHelper.Core {
 				item.Sections.Add(new LangSection(ClassFile.FilePath, "# " + trim));
 			}
 		}
-		
+
 		public IEnumerable<(IDLineDef, IDLineDef)> FindContaining(string query) {
 			List<IDLineDef> definitionsMatchingQuery = LangFiles.Values.SelectMany(s => s.FindAll(query)).ToList();
 
@@ -48,12 +48,16 @@ namespace LocalizationHelper.Core {
 			IEnumerable<InnerClass> inner = ClassFile.Internals.Where(w => w.GetType() == typeof(InnerClass)).Cast<InnerClass>().ToList();
 
 			foreach (IDLineDef id in definitionsMatchingQuery) {
-				IDLineDef clsId = inner.Select(s => s.FindAllDefinitions("query").Single(w => w.ID == id.ID)).Single();
+				IDLineDef clsId = inner.Select(s => s.FindAllDefinitions().SingleOrDefault(w => w.ID == id.ID)).Single();
+				if (clsId == default) {
+					/*TODO inform the user*/
+					continue;
+				}
 				ret.Add((id, clsId));
 			}
 			return ret;
 		}
-		
+
 		public void Save() {
 			File.WriteAllText(csFile, ClassFile.GetStr(), Encoding.UTF8);
 

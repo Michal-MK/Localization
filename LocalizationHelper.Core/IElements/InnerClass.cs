@@ -19,7 +19,7 @@ namespace LocalizationHelper.Core.IElements {
 							.Replace(" {", "");
 			i++;
 			FileName = fileName;
-			
+
 			while (i < lines.Length && lines[i].Trim() != "}") {
 				if (lines[i].TrimStart().StartsWith("public const int ")) {
 					Internals.Add(new IDLineDef(fileName, Name, lines[i]));
@@ -34,30 +34,36 @@ namespace LocalizationHelper.Core.IElements {
 			}
 			lastLine = lines[i];
 		}
-		
+
 		public string FileName { get; }
 		public string Name { get; }
 		public List<IElement> Internals { get; } = new();
-		
+
 		private readonly string firstLine;
 		private readonly string lastLine;
-		
-		public IEnumerable<IDLineDef> FindAllDefinitions(string query) {
+
+		public IEnumerable<IDLineDef> FindAllDefinitions() {
 			IEnumerable<IDLineDef> ret = new List<IDLineDef>();
 			ret = Internals.Where(w => w.GetType() == typeof(IDLineDef))
 						   .Cast<IDLineDef>().Concat(ret);
 
 			ret = Internals.Where(w => w.GetType() == typeof(InnerClass))
-						   .Cast<InnerClass>().SelectMany(s => s.FindAllDefinitions(query))
+						   .Cast<InnerClass>().SelectMany(s => s.FindAllDefinitions())
 						   .Concat(ret);
 
 			return ret;
 		}
-		
+
 		public string GetStr() {
 			return firstLine + Environment.NewLine +
 				   string.Join(Environment.NewLine, Internals.Select(s => s.GetStr())) + Environment.NewLine +
 				   lastLine;
+		}
+
+		public IEnumerable<InnerClass> GetAllInnerClasses() {
+			return Internals.Where(w => w.GetType() == typeof(InnerClass))
+							.Cast<InnerClass>()
+							.SelectMany(s => s.GetAllInnerClasses()).Concat(new[] { this });
 		}
 	}
 }

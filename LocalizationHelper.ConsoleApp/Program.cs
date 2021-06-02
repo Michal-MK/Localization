@@ -14,15 +14,22 @@ namespace LocalizationHelper.ConsoleApp {
 
 			List<Localizable> ls = GetLocalizables(CONFIG_PATH);
 
-			Main m = new(ls, Console.Out);
+			Main m = new(ls);
 
 			while (true) {
 				Console.Write("> ");
 				string line = Console.ReadLine();
-				m.Handle(line);
+				string output = m.Handle(line);
+				if (output != null) {
+					Console.WriteLine(output);
+				}
 
-				if (line == "exit") {
-					return;
+				switch (line) {
+					case "exit":
+						return;
+					case "cls":
+						Console.Clear();
+						break;
 				}
 			}
 		}

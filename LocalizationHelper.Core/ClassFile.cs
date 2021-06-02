@@ -6,11 +6,11 @@ using LocalizationHelper.Core.IElements;
 
 namespace LocalizationHelper.Core {
 	public class ClassFile : IElement {
-		
+
 		private ClassFile(string filePath) {
 			FilePath = filePath;
 		}
-		
+
 		public static ClassFile Parse(string path) {
 			ClassFile ret = new(path);
 
@@ -34,11 +34,15 @@ namespace LocalizationHelper.Core {
 			}
 			return ret;
 		}
-		
+
 		public List<IElement> Internals { get; } = new();
 		public string FilePath { get; }
 
 		private readonly List<string> firstLines = new();
+
+		public List<InnerClass> GetInnerClasses() {
+			return Internals.Where(w => w.GetType() == typeof(InnerClass)).Cast<InnerClass>().SelectMany(sm => sm.GetAllInnerClasses()).ToList();
+		}
 
 		public string GetStr() {
 			return string.Join(Environment.NewLine, firstLines) + Environment.NewLine +
