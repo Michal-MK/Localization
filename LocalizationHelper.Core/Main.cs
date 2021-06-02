@@ -83,9 +83,9 @@ namespace LocalizationHelper.Core {
 				string trimmed = line.Remove(0, 3);
 				try {
 					activeInnerClass = ((InnerClass)activeLocalizable.ClassFile.Internals[0])
-									   .Internals
-									   .Where(w => w.GetType() == typeof(InnerClass)).Cast<InnerClass>()
-									   .Single(w => w.Name.ToLower().Contains(trimmed.ToLower()));
+						.Internals.Where(w => w.GetType() == typeof(InnerClass))
+						.Cast<InnerClass>()
+						.First(w => w.Name.ToLower().Contains(trimmed.ToLower()));
 
 					foreach ((string _, LangFile value) in activeLocalizable.LangFiles) {
 						List<LangSection> sections = value.Sections
@@ -96,7 +96,7 @@ namespace LocalizationHelper.Core {
 						}
 						catch (Exception) {
 							return "Could not find LangSection for subclass: " + trimmed + Environment.NewLine +
-							       "Found only: " + string.Join(", ", sections.Select(s => s.Comment));
+								   "Found only: " + string.Join(", ", sections.Select(s => s.Comment));
 						}
 					}
 				}
@@ -110,6 +110,12 @@ namespace LocalizationHelper.Core {
 
 			if (line == "lso") {
 				return string.Join(", ", activeLocalizable.LangFiles.Keys.Select(Path.GetFileNameWithoutExtension));
+			}
+
+			if (line == "lsd") {
+				return string.Join(Environment.NewLine, activeInnerClass.Internals
+					   .Where(w => w.GetType() == typeof(IDLineDef)).Cast<IDLineDef>()
+					   .Select(s => s.GetStr().TrimStart()));
 			}
 
 			if (line.Contains("|")) {
