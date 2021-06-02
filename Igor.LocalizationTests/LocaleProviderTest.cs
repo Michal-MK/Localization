@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using Igor.Localization;
 using NUnit.Framework;
@@ -17,7 +18,7 @@ namespace Igor.LocalizationTests {
 
 		[Test]
 		public void InitNoLanguageSelected() {
-			LocaleProvider.Instance.GetType()
+			_ = LocaleProvider.Instance.GetType()
 						  .GetProperty(nameof(LocaleProvider.Instance), BindingFlags.Public | BindingFlags.Static)
 						  ?.SetMethod.Invoke(LocaleProvider.Instance, new object[] { null });
 
@@ -32,16 +33,36 @@ namespace Igor.LocalizationTests {
 		}
 
 		[Test]
+		public void PostInitSelectedLanguageName() {
+			Assert.That(lp.GetFullName("en-us") == "English");
+		}
+
+		[Test]
+		public void LoadedLanguagesCollection() {
+			Assert.That(lp.LoadedLanguages.Contains("cs-cz"));
+			Assert.That(lp.LoadedLanguages.Contains("en-us"));
+			Assert.That(lp.LoadedLanguages.Count() == 2);
+		}
+
+		[Test]
 		public void PostInitSelectedDefaultLanguage() {
 			Assert.That(lp.DefaultLanguage == "en-us");
 		}
 
 		[Test]
 		public void PostInitSwitchLanguage() {
+			lp.OnLanguageChanged += OnLanguageChanged;
+
 			lp.SetActiveLanguage("cs-cz");
+
+			lp.OnLanguageChanged -= OnLanguageChanged;
 
 			Assert.That(lp.DefaultLanguage == "en-us");
 			Assert.That(lp.CurrentLanguage == "cs-cz");
+
+			void OnLanguageChanged(object sender, EventArgs e) {
+				Assert.That(lp.CurrentLanguage == "cs-cz");
+			}
 		}
 
 		[Test]
@@ -57,6 +78,19 @@ namespace Igor.LocalizationTests {
 		[Test]
 		public void GetLocalization() {
 			Assert.That(lp.Get(-1) == "Back");
+		}
+
+		[Test]
+		public void GetLocalizationCode() {
+			Assert.That(lp.GetCode("Back") == -1);
+		}
+
+		[Test]
+		public void GetLocalizationFromDefault() {
+			lp.SetActiveLanguage("cs-cz", true);
+			lp.SetActiveLanguage("en-us");
+
+			Assert.That(lp.GetFromDefault(-1) == "Zpět");
 		}
 
 		[Test]

@@ -2,10 +2,10 @@
 
 namespace Igor.Localization {
 	internal class LocaleData {
-		public string LanguageCode { get; set; }
+		internal string LanguageCode { get; set; }
 
-		public string FullLangName { get; set; }
+		internal string FullLangName { get; set; }
 
-		public Dictionary<int, string> Language { get; set; }
+		internal Dictionary<int, string> Language { get; set; }
 	}
 }

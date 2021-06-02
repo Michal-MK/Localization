@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace Igor.Localization {
 	internal class Language {
 
-		public Language(LocaleData data) {
-			langCode = data.LanguageCode;
+		internal Language(LocaleData data) {
+			LanguageCode = data.LanguageCode;
 
 			Fullname = data.FullLangName;
 			Mapping = data.Language;
@@ -18,12 +18,12 @@ namespace Igor.Localization {
 			}
 		}
 
-		private string langCode;
+		internal string LanguageCode { get; }
 
-		public string Fullname { get; set; }
+		internal string Fullname { get; set; }
 
-		public Dictionary<int, string> Mapping { get; }
+		internal Dictionary<int, string> Mapping { get; }
 
-		public Dictionary<string, int> ReverseMapping { get; }
+		internal Dictionary<string, int> ReverseMapping { get; }
 	}
 }
