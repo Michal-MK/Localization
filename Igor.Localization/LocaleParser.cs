@@ -53,7 +53,7 @@ namespace Igor.Localization {
 					foreach (KeyValuePair<int, string> item in data.Language) {
 						ret[data.LanguageCode].Mapping.Add(item.Key, item.Value);
 						if (ret[data.LanguageCode].ReverseMapping.ContainsKey(item.Value)) {
-							throw new ArgumentException($"The string '{item.Value}' has already been added as a key (redefinition)!");
+							continue;
 						}
 						ret[data.LanguageCode].ReverseMapping.Add(item.Value, item.Key);
 					}

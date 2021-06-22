@@ -46,7 +46,7 @@ namespace Igor.Localization {
 		/// <param name="localeFolder">the folder containing all the localization files</param>
 		/// <returns>An instance of the <see cref="LocaleProvider"/>, also accessible by <see cref="Instance"/></returns>
 		public static LocaleProvider Initialize(string localeFolder) {
-			return Instance ?? new LocaleProvider(localeFolder);
+			return Instance = new LocaleProvider(localeFolder);
 		}
 
 		private LocaleProvider(string localeFolder) {
@@ -80,7 +80,7 @@ namespace Igor.Localization {
 		/// <param name="tryDefaultIfMissing">a flag to try obtaining the localized string from the default language in case the active language does not have the localized string defined</param>
 		/// <returns>The localized string</returns>
 		public string Get(int stringCode, bool tryDefaultIfMissing = false) {
-			if (currentLanguage.Mapping.TryGetValue(stringCode, out string value)) {
+			if (currentLanguage.TryGetValue(stringCode, out string value)) {
 				return value;
 			}
 			if (tryDefaultIfMissing && defaultLanguage != null && defaultLanguage.Mapping.TryGetValue(stringCode, out value)) {

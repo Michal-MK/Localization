@@ -10,11 +10,14 @@ namespace Igor.Localization {
 			Fullname = data.FullLangName;
 			Mapping = data.Language;
 			ReverseMapping = new Dictionary<string, int>();
-			foreach (var item in Mapping) {
+			RedefinitionMapping = new Dictionary<int, int>();
+			foreach (KeyValuePair<int, string> item in Mapping) {
 				if (ReverseMapping.ContainsKey(item.Value)) {
-					throw new ArgumentException($"The string '{item.Value}' has already been added as a key (redefinition)!");
+					RedefinitionMapping.Add(item.Key, ReverseMapping[item.Value]);
 				}
-				ReverseMapping.Add(item.Value, item.Key);
+				else {
+					ReverseMapping.Add(item.Value, item.Key);
+				}
 			}
 		}
 
@@ -25,5 +28,20 @@ namespace Igor.Localization {
 		internal Dictionary<int, string> Mapping { get; }
 
 		internal Dictionary<string, int> ReverseMapping { get; }
+
+		private Dictionary<int, int> RedefinitionMapping { get; }
+
+		public bool TryGetValue(int stringCode, out string localizedString) {
+			localizedString = "";
+			if (Mapping.ContainsKey(stringCode)) {
+				localizedString = Mapping[stringCode];
+				return true;
+			}
+			if (RedefinitionMapping.ContainsKey(stringCode)) {
+				localizedString = Mapping[RedefinitionMapping[stringCode]];
+				return true;
+			}
+			return false;
+		}
 	}
 }

@@ -146,5 +146,19 @@ namespace Igor.LocalizationTests {
 			Assert.That(lp.SmartFormat(ID, 0, 1) == EXPECTED_ONE);
 			Assert.That(lp.SmartFormat(ID, -1, 2) == EXPECTED_TWO);
 		}
+
+		[Test]
+		public void TextRedefinition() {
+			lp = LocaleProvider.Initialize("Locales/Redefinitions");
+			lp.SetActiveLanguage("cs-cz", true);
+
+			Assert.That(lp.Get(1) == "Zpět");
+			Assert.That(lp.Get(2) == "Zpět");
+
+			lp.SetActiveLanguage("en-us");
+
+			Assert.That(lp.Get(1) == "Back");
+			Assert.That(lp.Get(2) == "Abort");
+		}
 	}
 }
