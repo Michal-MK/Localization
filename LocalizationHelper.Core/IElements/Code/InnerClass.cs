@@ -2,30 +2,30 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LocalizationHelper.Core.IElements {
+namespace LocalizationHelper.Core.IElements.Code {
 	public class InnerClass : IElement {
-		public InnerClass(string fileName, string name) {
+		public InnerClass(ClassFile classFile, string name) {
 			firstLine = "\t\tpublic class " + name + " {";
 			Name = name;
-			FileName = fileName;
+			ClassFile = classFile;
 			lastLine = "\t\t}";
 		}
 
-		public InnerClass(string fileName, ref int i, string[] lines) {
+		public InnerClass(ClassFile classFile, ref int i, string[] lines) {
 			firstLine = lines[i];
 			Name = firstLine.Split(":")[0]
 							.Trim()
 							.Replace("public class ", "")
 							.Replace(" {", "");
 			i++;
-			FileName = fileName;
+			ClassFile = classFile;
 
 			while (i < lines.Length && lines[i].Trim() != "}") {
 				if (lines[i].TrimStart().StartsWith("public const int ")) {
-					Internals.Add(new IDLineDef(fileName, Name, lines[i]));
+					Internals.Add(new IDLineDefinition(ClassFile, Name, lines[i]));
 				}
 				else if (lines[i].TrimStart().StartsWith("public class ")) {
-					Internals.Add(new InnerClass(fileName, ref i, lines));
+					Internals.Add(new InnerClass(classFile, ref i, lines));
 				}
 				else {
 					Internals.Add(new StdLine(lines[i]));
@@ -35,17 +35,17 @@ namespace LocalizationHelper.Core.IElements {
 			lastLine = lines[i];
 		}
 
-		public string FileName { get; }
+		public ClassFile ClassFile { get; }
 		public string Name { get; }
 		public List<IElement> Internals { get; } = new();
 
 		private readonly string firstLine;
 		private readonly string lastLine;
 
-		public IEnumerable<IDLineDef> FindAllDefinitions() {
-			IEnumerable<IDLineDef> ret = new List<IDLineDef>();
-			ret = Internals.Where(w => w.GetType() == typeof(IDLineDef))
-						   .Cast<IDLineDef>().Concat(ret);
+		public IEnumerable<IDLineDefinition> FindAllDefinitions() {
+			IEnumerable<IDLineDefinition> ret = new List<IDLineDefinition>();
+			ret = Internals.Where(w => w.GetType() == typeof(IDLineDefinition))
+						   .Cast<IDLineDefinition>().Concat(ret);
 
 			ret = Internals.Where(w => w.GetType() == typeof(InnerClass))
 						   .Cast<InnerClass>().SelectMany(s => s.FindAllDefinitions())

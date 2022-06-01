@@ -2,9 +2,13 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspectInjector" Version="2.7.2" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LocalizationHelper.Core\LocalizationHelper.Core.csproj" />

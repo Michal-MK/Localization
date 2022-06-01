@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using LocalizationHelper.Core.IElements;
 
-namespace LocalizationHelper.Core {
+namespace LocalizationHelper.Core.IElements.Code {
 	public class ClassFile : IElement {
 
 		private ClassFile(string filePath) {
@@ -19,11 +18,11 @@ namespace LocalizationHelper.Core {
 
 			for (int i = 0; i < lines.Length; i++) {
 				if (lines[i].TrimStart().StartsWith("public const int ")) {
-					ret.Internals.Add(new IDLineDef(Path.GetFileNameWithoutExtension(path), Path.GetFileNameWithoutExtension(path), lines[i]));
+					ret.Internals.Add(new IDLineDefinition(ret, Path.GetFileNameWithoutExtension(path), lines[i]));
 				}
 				else if (lines[i].TrimStart().StartsWith("public class ")) {
 					gotClass = true;
-					ret.Internals.Add(new InnerClass(Path.GetFileNameWithoutExtension(path), ref i, lines));
+					ret.Internals.Add(new InnerClass(ret, ref i, lines));
 				}
 				else if (lines[i].Trim() == "}") {
 					ret.Internals.Add(new StdLine(lines[i]));

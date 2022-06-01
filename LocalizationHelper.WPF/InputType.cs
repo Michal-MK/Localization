@@ -1,6 +1,6 @@
-﻿namespace LocalizationHelper.WPF {
-	public enum InputType {
-		Search,
-		Definition
-	}
+﻿namespace LocalizationHelper.WPF;
+
+public enum InputType {
+	Search,
+	Definition
 }

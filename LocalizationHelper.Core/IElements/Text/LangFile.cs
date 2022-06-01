@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using LocalizationHelper.Core.IElements;
 
-namespace LocalizationHelper.Core {
+namespace LocalizationHelper.Core.IElements.Text {
 	public class LangFile : IElement {
 		public static LangFile Parse(string langFilePath) {
-			LangFile ret = new();
+			LangFile ret = new() { FileName = langFilePath };
 
 			string[] lines = File.ReadAllLines(langFilePath);
 
@@ -22,7 +21,7 @@ namespace LocalizationHelper.Core {
 					ret.Sections.Add(new StdLine(lines[i]));
 				}
 				else if (lines[i].TrimStart().StartsWith("#")) {
-					ret.Sections.Add(LangSection.Parse(langFilePath, ref i, lines));
+					ret.Sections.Add(LangSection.Parse(ret, ref i, lines));
 				}
 			}
 
@@ -31,9 +30,11 @@ namespace LocalizationHelper.Core {
 
 		public List<IElement> Sections { get; } = new();
 
+		public string FileName { get; init; }
+
 		private string header;
 
-		public IEnumerable<IDLineDef> FindAll(string query) {
+		public IEnumerable<IDLineLocalization> FindAll(string query) {
 			return Sections.Where(w => w.GetType() == typeof(LangSection))
 						   .Cast<LangSection>()
 						   .SelectMany(s => s.FindAllDefinitions(query));

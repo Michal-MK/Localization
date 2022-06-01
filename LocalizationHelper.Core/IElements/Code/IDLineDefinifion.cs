@@ -1,16 +1,16 @@
-﻿namespace LocalizationHelper.Core.IElements {
-	public class IDLineDef : IElement {
-		public IDLineDef(string classFileFilePath, string parentName, string name, int id) {
+﻿namespace LocalizationHelper.Core.IElements.Code {
+	public class IDLineDefinition : IElement {
+		public IDLineDefinition(ClassFile classFile, string parentName, string name, int id) {
 			line = $"\t\t\tpublic const int {name} = {id};";
 			ID = id;
 			Parent = parentName;
-			FileName = classFileFilePath;
+			ClassFile = classFile;
 		}
 
-		public IDLineDef(string fileName, string parentName, string line) {
+		public IDLineDefinition(ClassFile classFile, string parentName, string line) {
 			this.line = line;
 			Parent = parentName;
-			FileName = fileName;
+			ClassFile = classFile;
 			if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#')) return;
 			if (line.Trim().StartsWith("public const ")) {
 				if (int.TryParse(line.Split('=')[1].Replace(";", "").Trim(), out int id)) {
@@ -24,10 +24,10 @@
 
 		public int ID { get; }
 		public string Parent { get; }
-		public string FileName { get; }
-		
+		public ClassFile ClassFile { get; }
+
 		private readonly string line;
-		
+
 		public string GetStr() {
 			return line;
 		}

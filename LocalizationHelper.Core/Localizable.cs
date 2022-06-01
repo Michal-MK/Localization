@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using LocalizationHelper.Core.IElements;
+using LocalizationHelper.Core.IElements.Code;
+using LocalizationHelper.Core.IElements.Text;
 
 namespace LocalizationHelper.Core {
 	public class Localizable {
@@ -13,8 +15,7 @@ namespace LocalizationHelper.Core {
 			string[] split = region[^1].Split(';', StringSplitOptions.RemoveEmptyEntries);
 			ret.Name = split[0];
 			ret.Shortcut = split[1];
-			ret.csFile = region[^2];
-			ret.ClassFile = ClassFile.Parse(ret.csFile);
+			ret.ClassFile = ClassFile.Parse(region[^2]);
 
 			for (int i = 0; i < region.Count - 2; i++) {
 				ret.LangFiles.Add(region[i], LangFile.Parse(region[i]));
@@ -27,28 +28,26 @@ namespace LocalizationHelper.Core {
 		public ClassFile ClassFile { get; private set; }
 		public Dictionary<string, LangFile> LangFiles { get; } = new();
 
-		private string csFile;
-
 		public void AddSubClass(string trim) {
 			InnerClass parent = (InnerClass)ClassFile.Internals.First(f => f.GetType() == typeof(InnerClass));
-			InnerClass ic = new(parent.FileName, trim);
+			InnerClass ic = new(ClassFile, trim);
 
 			parent.Internals.Add(new StdLine(""));
 			parent.Internals.Add(ic);
 
 			foreach (LangFile item in LangFiles.Values) {
-				item.Sections.Add(new LangSection(ClassFile.FilePath, "# " + trim));
+				item.Sections.Add(new LangSection(item, "# " + trim));
 			}
 		}
+		
+		public IEnumerable<(IDLineLocalization, IDLineDefinition)> FindContaining(string query) {
+			List<IDLineLocalization> localizationsMatchingQuery = LangFiles.Values.SelectMany(s => s.FindAll(query)).ToList();
 
-		public IEnumerable<(IDLineDef, IDLineDef)> FindContaining(string query) {
-			List<IDLineDef> definitionsMatchingQuery = LangFiles.Values.SelectMany(s => s.FindAll(query)).ToList();
-
-			List<(IDLineDef, IDLineDef)> ret = new();
+			List<(IDLineLocalization, IDLineDefinition)> ret = new();
 			IEnumerable<InnerClass> inner = ClassFile.Internals.Where(w => w.GetType() == typeof(InnerClass)).Cast<InnerClass>().ToList();
 
-			foreach (IDLineDef id in definitionsMatchingQuery) {
-				IDLineDef clsId = inner.Select(s => s.FindAllDefinitions().SingleOrDefault(w => w.ID == id.ID)).Single();
+			foreach (IDLineLocalization id in localizationsMatchingQuery) {
+				IDLineDefinition clsId = inner.Select(s => s.FindAllDefinitions().SingleOrDefault(w => w.ID == id.ID)).Single();
 				if (clsId == default) {
 					/*TODO inform the user*/
 					continue;
@@ -59,7 +58,7 @@ namespace LocalizationHelper.Core {
 		}
 
 		public void Save() {
-			File.WriteAllText(csFile, ClassFile.GetStr(), Encoding.UTF8);
+			File.WriteAllText(ClassFile.FilePath, ClassFile.GetStr(), Encoding.UTF8);
 
 			foreach ((string key, LangFile value) in LangFiles) {
 				File.WriteAllText(key, value.GetStr(), Encoding.UTF8);

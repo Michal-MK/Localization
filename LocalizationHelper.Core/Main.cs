@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using ConsoleTables;
 using LocalizationHelper.Core.IElements;
+using LocalizationHelper.Core.IElements.Code;
+using LocalizationHelper.Core.IElements.Text;
 using TextCopy;
 
 namespace LocalizationHelper.Core {
@@ -52,13 +54,13 @@ namespace LocalizationHelper.Core {
 
 			if (line.StartsWith("f ")) {
 				string query = line.Remove(0, 2);
-				IEnumerable<(IDLineDef, IDLineDef)> found = FindAll(ls, query);
+				IEnumerable<(IDLineLocalization, IDLineDefinition)> found = FindAll(ls, query);
 				Console.WriteLine("Found:");
 				ConsoleTable ct = new("Class File:", "Lang File:");
 
 				found.Select(s => new object[] {
-					s.Item2.FileName + " -> " + s.Item2.Parent + " -> " + s.Item2.GetStr().TrimStart(),
-					s.Item1.GetStr()
+					s.Item1.LangSection.LangFile + " -> " + s.Item2.Parent + " -> " + s.Item2.GetStr().TrimStart(),
+					s.Item2.GetStr()
 				}).ForEach(f => ct.AddRow(f));
 
 				ct.Write();
@@ -114,7 +116,7 @@ namespace LocalizationHelper.Core {
 
 			if (line == "lsd") {
 				return string.Join(Environment.NewLine, activeInnerClass.Internals
-					   .Where(w => w.GetType() == typeof(IDLineDef)).Cast<IDLineDef>()
+					   .Where(w => w.GetType() == typeof(IDLineDefinition)).Cast<IDLineDefinition>()
 					   .Select(s => s.GetStr().TrimStart()));
 			}
 
@@ -124,14 +126,14 @@ namespace LocalizationHelper.Core {
 				int id = r.Next(1000, int.MaxValue);
 
 				Span<string> languages = split.AsSpan(1);
-				activeInnerClass.Internals.Add(new IDLineDef(activeLocalizable.ClassFile.FilePath, activeInnerClass.Name, name, id));
+				activeInnerClass.Internals.Add(new IDLineDefinition(activeLocalizable.ClassFile, activeInnerClass.Name, name, id));
 				int index = 0;
 				foreach (LangFile val in activeLocalizable.LangFiles.Values) {
 					val.Sections
 					   .Where(w => w.GetType() == typeof(LangSection))
 					   .Select(s => (LangSection)s)
 					   .Single(w => w.Comment.Remove(0, 2) == activeInnerClass.Name)
-					   .Definitions.Add(new StdLine(id, languages[index]));
+					   .Definitions.Add(new StdLine(id + ":" + languages[index]));
 					index++;
 				}
 
@@ -200,8 +202,8 @@ namespace LocalizationHelper.Core {
 			return line.Any(c => c == '\n') || line.Contains("{0}");
 		}
 
-		private IEnumerable<(IDLineDef, IDLineDef)> FindAll(List<Localizable> ls, string query) {
-			IEnumerable<(IDLineDef, IDLineDef)> lines = new List<(IDLineDef, IDLineDef)>();
+		private IEnumerable<(IDLineLocalization, IDLineDefinition)> FindAll(List<Localizable> ls, string query) {
+			IEnumerable<(IDLineLocalization, IDLineDefinition)> lines = new List<(IDLineLocalization, IDLineDefinition)>();
 			lines = ls.Aggregate(lines, (current, l) => l.FindContaining(query).Concat(current));
 			return lines;
 		}
