@@ -30,8 +30,7 @@ namespace LocalizationHelper.Core.IElements.Text {
 		public List<IElement> Definitions { get; } = new();
 
 		public IEnumerable<IDLineLocalization> FindAllDefinitions(string query) {
-			return Definitions.Where(w => w.GetType() == typeof(IDLineLocalization))
-							  .Cast<IDLineLocalization>()
+			return Definitions.OfType<IDLineLocalization>()
 							  .Where(w => w.GetStr().ToLower().Contains(query.ToLower()));
 		}
 

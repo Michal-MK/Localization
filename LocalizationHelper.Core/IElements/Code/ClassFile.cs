@@ -20,7 +20,7 @@ namespace LocalizationHelper.Core.IElements.Code {
 				if (lines[i].TrimStart().StartsWith("public const int ")) {
 					ret.Internals.Add(new IDLineDefinition(ret, Path.GetFileNameWithoutExtension(path), lines[i]));
 				}
-				else if (lines[i].TrimStart().StartsWith("public class ")) {
+				else if (lines[i].TrimStart().StartsWith("public class ") || lines[i].TrimStart().StartsWith("public static class ")) {
 					gotClass = true;
 					ret.Internals.Add(new InnerClass(ret, ref i, lines));
 				}
@@ -40,7 +40,7 @@ namespace LocalizationHelper.Core.IElements.Code {
 		private readonly List<string> firstLines = new();
 
 		public List<InnerClass> GetInnerClasses() {
-			return Internals.Where(w => w.GetType() == typeof(InnerClass)).Cast<InnerClass>().SelectMany(sm => sm.GetAllInnerClasses()).ToList();
+			return Internals.OfType<InnerClass>().SelectMany(sm => sm.GetAllInnerClasses()).ToList();
 		}
 
 		public string GetStr() {

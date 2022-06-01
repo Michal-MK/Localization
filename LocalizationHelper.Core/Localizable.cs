@@ -44,7 +44,7 @@ namespace LocalizationHelper.Core {
 			List<IDLineLocalization> localizationsMatchingQuery = LangFiles.Values.SelectMany(s => s.FindAll(query)).ToList();
 
 			List<(IDLineLocalization, IDLineDefinition)> ret = new();
-			IEnumerable<InnerClass> inner = ClassFile.Internals.Where(w => w.GetType() == typeof(InnerClass)).Cast<InnerClass>().ToList();
+			IEnumerable<InnerClass> inner = ClassFile.Internals.OfType<InnerClass>().ToList();
 
 			foreach (IDLineLocalization id in localizationsMatchingQuery) {
 				IDLineDefinition clsId = inner.Select(s => s.FindAllDefinitions().SingleOrDefault(w => w.ID == id.ID)).Single();

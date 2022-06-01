@@ -71,8 +71,8 @@ namespace LocalizationHelper.Core {
 			if (line == "lsc") {
 				List<IElement> interns = ((InnerClass)activeLocalizable.ClassFile.Internals[0]).Internals;
 				return string.Join(Environment.NewLine, interns
-																   .Where(w => w.GetType() == typeof(InnerClass))
-																   .Select(s => ((InnerClass)s).Name));
+																   .OfType<InnerClass>()
+																   .Select(s => s.Name));
 			}
 
 			if (line.StartsWith("ac ")) {
@@ -85,14 +85,12 @@ namespace LocalizationHelper.Core {
 				string trimmed = line.Remove(0, 3);
 				try {
 					activeInnerClass = ((InnerClass)activeLocalizable.ClassFile.Internals[0])
-						.Internals.Where(w => w.GetType() == typeof(InnerClass))
-						.Cast<InnerClass>()
+						.Internals.OfType<InnerClass>()
 						.First(w => w.Name.ToLower().Contains(trimmed.ToLower()));
 
 					foreach ((string _, LangFile value) in activeLocalizable.LangFiles) {
 						List<LangSection> sections = value.Sections
-														  .Where(w => w.GetType() == typeof(LangSection))
-														  .Select(s => (LangSection)s).ToList();
+														  .OfType<LangSection>().ToList();
 						try {
 							LangSection _ = sections.Single(w => w.Comment.Remove(0, 2) == activeInnerClass.Name);
 						}
@@ -116,7 +114,7 @@ namespace LocalizationHelper.Core {
 
 			if (line == "lsd") {
 				return string.Join(Environment.NewLine, activeInnerClass.Internals
-					   .Where(w => w.GetType() == typeof(IDLineDefinition)).Cast<IDLineDefinition>()
+					   .OfType<IDLineDefinition>()
 					   .Select(s => s.GetStr().TrimStart()));
 			}
 
@@ -130,8 +128,7 @@ namespace LocalizationHelper.Core {
 				int index = 0;
 				foreach (LangFile val in activeLocalizable.LangFiles.Values) {
 					val.Sections
-					   .Where(w => w.GetType() == typeof(LangSection))
-					   .Select(s => (LangSection)s)
+					   .OfType<LangSection>()
 					   .Single(w => w.Comment.Remove(0, 2) == activeInnerClass.Name)
 					   .Definitions.Add(new StdLine(id + ":" + languages[index]));
 					index++;

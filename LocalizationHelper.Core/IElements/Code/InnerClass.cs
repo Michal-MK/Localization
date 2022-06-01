@@ -44,11 +44,9 @@ namespace LocalizationHelper.Core.IElements.Code {
 
 		public IEnumerable<IDLineDefinition> FindAllDefinitions() {
 			IEnumerable<IDLineDefinition> ret = new List<IDLineDefinition>();
-			ret = Internals.Where(w => w.GetType() == typeof(IDLineDefinition))
-						   .Cast<IDLineDefinition>().Concat(ret);
+			ret = Internals.OfType<IDLineDefinition>().Concat(ret);
 
-			ret = Internals.Where(w => w.GetType() == typeof(InnerClass))
-						   .Cast<InnerClass>().SelectMany(s => s.FindAllDefinitions())
+			ret = Internals.OfType<InnerClass>().SelectMany(s => s.FindAllDefinitions())
 						   .Concat(ret);
 
 			return ret;
@@ -61,8 +59,7 @@ namespace LocalizationHelper.Core.IElements.Code {
 		}
 
 		public IEnumerable<InnerClass> GetAllInnerClasses() {
-			return Internals.Where(w => w.GetType() == typeof(InnerClass))
-							.Cast<InnerClass>()
+			return Internals.OfType<InnerClass>()
 							.SelectMany(s => s.GetAllInnerClasses()).Concat(new[] { this });
 		}
 	}

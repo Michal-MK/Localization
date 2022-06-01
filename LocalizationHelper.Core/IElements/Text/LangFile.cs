@@ -35,8 +35,7 @@ namespace LocalizationHelper.Core.IElements.Text {
 		private string header;
 
 		public IEnumerable<IDLineLocalization> FindAll(string query) {
-			return Sections.Where(w => w.GetType() == typeof(LangSection))
-						   .Cast<LangSection>()
+			return Sections.OfType<LangSection>()
 						   .SelectMany(s => s.FindAllDefinitions(query));
 		}
 
