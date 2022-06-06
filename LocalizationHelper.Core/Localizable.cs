@@ -64,5 +64,9 @@ namespace LocalizationHelper.Core {
 				File.WriteAllText(key, value.GetStr(), Encoding.UTF8);
 			}
 		}
+
+		public LangSection GetLangSectionForInnerClass(InnerClass inner, string lang) {
+			return LangFiles.First(f => f.Key == lang).Value.GetLangSection(inner);
+		}
 	}
 }

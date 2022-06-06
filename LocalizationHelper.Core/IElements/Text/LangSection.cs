@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace LocalizationHelper.Core.IElements.Text {
-	public class LangSection : IElement {
+	public class LangSection : ILangElement {
 		public LangSection(LangFile langFile, string comment) {
 			Comment = comment;
 			LangFile = langFile;
@@ -19,7 +19,7 @@ namespace LocalizationHelper.Core.IElements.Text {
 					i++;
 					continue;
 				}
-				ret.Definitions.Add(new IDLineLocalization(ret, ret.Comment, int.Parse(lines[i].Split(":")[0])));
+				ret.Definitions.Add(new IDLineLocalization(ret, int.Parse(lines[i].Split(":")[0]), lines[i].Split(":",2)[1]));
 				i++;
 			}
 			return ret;
@@ -27,7 +27,7 @@ namespace LocalizationHelper.Core.IElements.Text {
 
 		public LangFile LangFile { get; }
 		public string Comment { get; }
-		public List<IElement> Definitions { get; } = new();
+		public List<ILangElement> Definitions { get; } = new();
 
 		public IEnumerable<IDLineLocalization> FindAllDefinitions(string query) {
 			return Definitions.OfType<IDLineLocalization>()
@@ -38,6 +38,10 @@ namespace LocalizationHelper.Core.IElements.Text {
 			return Comment + Environment.NewLine +
 				   string.Join(Environment.NewLine, Definitions.Select(s => s.GetStr())) +
 				   Environment.NewLine;
+		}
+
+		public List<IDLineLocalization> GetAllDefs() {
+			return Definitions.SelectMany(s => s.GetAllDefs()).ToList();
 		}
 	}
 }

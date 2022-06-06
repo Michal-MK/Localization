@@ -1,35 +1,46 @@
-﻿namespace LocalizationHelper.Core.IElements.Code {
-	public class IDLineDefinition : IElement {
-		public IDLineDefinition(ClassFile classFile, string parentName, string name, int id) {
-			line = $"\t\t\tpublic const int {name} = {id};";
+﻿using System.Collections.Generic;
+
+namespace LocalizationHelper.Core.IElements.Code {
+	public class IDLineDefinition : ICodeElement {
+		public IDLineDefinition(ClassFile classFile, string name, int id, InnerClass? parent = null) {
 			ID = id;
-			Parent = parentName;
+			Name = name;
 			ClassFile = classFile;
+			Parent = parent;
 		}
 
-		public IDLineDefinition(ClassFile classFile, string parentName, string line) {
-			this.line = line;
-			Parent = parentName;
+		public IDLineDefinition(ClassFile classFile, string line, InnerClass? parent = null) {
 			ClassFile = classFile;
+			Parent = parent;
 			if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#')) return;
 			if (line.Trim().StartsWith("public const ")) {
-				if (int.TryParse(line.Split('=')[1].Replace(";", "").Trim(), out int id)) {
+				string[] split = line.Split('=');
+				if (int.TryParse(split[1].Replace(";", "").Trim(), out int id)) {
 					ID = id;
 				}
-			}
-			else {
-				ID = int.Parse(line.Split(':')[0]);
+				else {
+					IDString = split[1].Replace(";", "").Trim();
+				}
+				Name = split[0].Replace("public const int", "").Trim();
 			}
 		}
 
-		public int ID { get; }
-		public string Parent { get; }
-		public ClassFile ClassFile { get; }
+		public string? IDString { get; }
+		public int? ID { get; }
 
-		private readonly string line;
+		public string IDFinal => ID?.ToString() ?? IDString;
+		public string Name { get; set; }
+		public ClassFile ClassFile { get; }
+		public InnerClass? Parent { get; }
+
+		private string Line => (Parent is not null ? Parent.Indent : ClassFile.Indent) + $"public const int {Name} = {IDFinal};";
 
 		public string GetStr() {
-			return line;
+			return Line;
+		}
+
+		public List<IDLineDefinition> GetAllDefs() {
+			return new List<IDLineDefinition> { this };
 		}
 	}
 }

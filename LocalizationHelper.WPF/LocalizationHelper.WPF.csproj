@@ -7,11 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\img\save.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AspectInjector" Version="2.7.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LocalizationHelper.Core\LocalizationHelper.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\img\save.png" />
   </ItemGroup>
 
 </Project>

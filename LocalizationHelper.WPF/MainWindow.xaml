@@ -6,7 +6,8 @@
         xmlns:vm="clr-namespace:LocalizationHelper.WPF.ViewModel"
         xmlns:core="clr-namespace:LocalizationHelper.Core;assembly=LocalizationHelper.Core"
         xmlns:elem="clr-namespace:LocalizationHelper.Core.IElements;assembly=LocalizationHelper.Core"
-        mc:Ignorable="d" Name="Root"
+        mc:Ignorable="d" x:Name="Root"
+        DataContextChanged="Root_DataContextChanged"
         Title="MainWindow" Height="450" Width="800">
 
     <Window.DataContext>
@@ -63,13 +64,19 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <TextBlock Text="{Binding OutputText}"/>
-            <DataGrid Grid.Row="1" ItemsSource="{Binding LocalizedTexts}" AutoGenerateColumns="False">
-                <DataGrid.Columns d:DataContext="vm:DataGridItem">
-                    <DataGridTextColumn Header="Property Name" Binding="{Binding PropertyName}"/>
-                    <DataGridTextColumn Header="CZ" Binding="{Binding ValueCZ}"/>
-                    <DataGridTextColumn Header="EN" Binding="{Binding ValueEN}"/>
-                </DataGrid.Columns>
+            <DataGrid Grid.Row="1" x:Name="DataGridControl" ItemsSource="{Binding LocalizedTexts}" AutoGenerateColumns="False"
+                      CanUserAddRows="False"
+                      AddingNewItem="DataGridControl_OnAddingNewItem" LoadingRow="DataGridControl_OnLoadingRow" CellEditEnding="DataGridControl_OnCellEditEnding">
             </DataGrid>
+            <Button Grid.Row="1" Width="48" Height="48" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,24,24"
+                    Command="{Binding SaveCommand}">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="16"/>
+                    </Style>
+                </Button.Resources>
+                <Image Source="/LocalizationHelper.WPF;component/Resources/img/save.png" Width="32" Height="32"/>
+            </Button>
         </Grid>
         
 

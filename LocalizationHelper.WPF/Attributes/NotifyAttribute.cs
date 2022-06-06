@@ -4,6 +4,7 @@ using LocalizationHelper.WPF.ViewModel.Base;
 using System;
 using System.Linq;
 using System.Reflection;
+using LocalizationHelper.Core;
 
 namespace ERecept.Core.Annotations;
 

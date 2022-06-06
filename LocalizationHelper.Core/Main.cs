@@ -59,7 +59,7 @@ namespace LocalizationHelper.Core {
 				ConsoleTable ct = new("Class File:", "Lang File:");
 
 				found.Select(s => new object[] {
-					s.Item1.LangSection.LangFile + " -> " + s.Item2.Parent + " -> " + s.Item2.GetStr().TrimStart(),
+					s.Item1.LangSection.LangFile + " -> " + s.Item2.GetStr().TrimStart(),
 					s.Item2.GetStr()
 				}).ForEach(f => ct.AddRow(f));
 
@@ -69,7 +69,7 @@ namespace LocalizationHelper.Core {
 			if (activeLocalizable is null) return null;
 
 			if (line == "lsc") {
-				List<IElement> interns = ((InnerClass)activeLocalizable.ClassFile.Internals[0]).Internals;
+				List<ICodeElement> interns = ((InnerClass)activeLocalizable.ClassFile.Internals[0]).Internals;
 				return string.Join(Environment.NewLine, interns
 																   .OfType<InnerClass>()
 																   .Select(s => s.Name));
@@ -124,7 +124,7 @@ namespace LocalizationHelper.Core {
 				int id = r.Next(1000, int.MaxValue);
 
 				Span<string> languages = split.AsSpan(1);
-				activeInnerClass.Internals.Add(new IDLineDefinition(activeLocalizable.ClassFile, activeInnerClass.Name, name, id));
+				activeInnerClass.Internals.Add(new IDLineDefinition(activeLocalizable.ClassFile, name, id));
 				int index = 0;
 				foreach (LangFile val in activeLocalizable.LangFiles.Values) {
 					val.Sections

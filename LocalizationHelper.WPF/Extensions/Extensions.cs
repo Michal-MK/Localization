@@ -12,11 +12,4 @@ public static class Extensions {
 		}
 		return ret;
 	}
-
-	public static IEnumerable<T> ForEach<T>(this IEnumerable<T> iterable, Action<T> action) {
-		foreach (T item in iterable) {
-			action(item);
-		}
-		return iterable;
-	}
 }

@@ -1,17 +1,22 @@
-﻿using System;
+﻿using LocalizationHelper.Core.IElements.Text;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace LocalizationHelper.Core.IElements.Code {
-	public class InnerClass : IElement {
-		public InnerClass(ClassFile classFile, string name) {
-			firstLine = "\t\tpublic class " + name + " {";
+	public class InnerClass : ICodeElement {
+		public InnerClass(ClassFile classFile, string name, InnerClass? parent = null) {
+			firstLine = (parent is not null ? parent.Indent : classFile.Indent) + "public class " + name + " {";
 			Name = name;
 			ClassFile = classFile;
-			lastLine = "\t\t}";
+			lastLine = classFile.Indent + "}";
+			Parent = parent;
 		}
 
-		public InnerClass(ClassFile classFile, ref int i, string[] lines) {
+		public int IndentLevel => Parent is not null ? Parent.IndentLevel + 1 : ClassFile.IndentLevel;
+		public string Indent => new('\t', IndentLevel);
+
+		public InnerClass(ClassFile classFile, ref int i, string[] lines, InnerClass? parent = null) {
 			firstLine = lines[i];
 			Name = firstLine.Split(":")[0]
 							.Trim()
@@ -19,13 +24,14 @@ namespace LocalizationHelper.Core.IElements.Code {
 							.Replace(" {", "");
 			i++;
 			ClassFile = classFile;
+			Parent = parent;
 
 			while (i < lines.Length && lines[i].Trim() != "}") {
 				if (lines[i].TrimStart().StartsWith("public const int ")) {
-					Internals.Add(new IDLineDefinition(ClassFile, Name, lines[i]));
+					Internals.Add(new IDLineDefinition(ClassFile, lines[i], this));
 				}
 				else if (lines[i].TrimStart().StartsWith("public class ")) {
-					Internals.Add(new InnerClass(classFile, ref i, lines));
+					Internals.Add(new InnerClass(classFile, ref i, lines, this));
 				}
 				else {
 					Internals.Add(new StdLine(lines[i]));
@@ -36,8 +42,10 @@ namespace LocalizationHelper.Core.IElements.Code {
 		}
 
 		public ClassFile ClassFile { get; }
+		
+		public InnerClass? Parent { get; }
 		public string Name { get; }
-		public List<IElement> Internals { get; } = new();
+		public List<ICodeElement> Internals { get; } = new();
 
 		private readonly string firstLine;
 		private readonly string lastLine;
@@ -61,6 +69,10 @@ namespace LocalizationHelper.Core.IElements.Code {
 		public IEnumerable<InnerClass> GetAllInnerClasses() {
 			return Internals.OfType<InnerClass>()
 							.SelectMany(s => s.GetAllInnerClasses()).Concat(new[] { this });
+		}
+
+		public List<IDLineDefinition> GetAllDefs() {
+			return Internals.SelectMany(s => s.GetAllDefs()).ToList();
 		}
 	}
 }

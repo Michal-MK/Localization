@@ -1,10 +1,12 @@
-﻿using System;
+﻿using LocalizationHelper.Core.IElements.Code;
+using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 
 namespace LocalizationHelper.Core.IElements.Text {
-	public class LangFile : IElement {
+	public class LangFile : ILangElement {
 		public static LangFile Parse(string langFilePath) {
 			LangFile ret = new() { FileName = langFilePath };
 
@@ -28,7 +30,7 @@ namespace LocalizationHelper.Core.IElements.Text {
 			return ret;
 		}
 
-		public List<IElement> Sections { get; } = new();
+		public List<ILangElement> Sections { get; } = new();
 
 		public string FileName { get; init; }
 
@@ -42,6 +44,15 @@ namespace LocalizationHelper.Core.IElements.Text {
 		public string GetStr() {
 			return (header != null ? header + Environment.NewLine : "") +
 				   string.Join(Environment.NewLine, Sections.Select(s => s.GetStr()));
+		}
+
+		public List<IDLineLocalization> GetAllDefs() {
+			return Sections.SelectMany(s => s.GetAllDefs()).ToList();
+		}
+
+		public LangSection? GetLangSection(InnerClass inner) {
+			string header = inner.Name;
+			return Sections.OfType<LangSection>().SingleOrDefault(s => s.Comment == "#" + header);
 		}
 	}
 }
