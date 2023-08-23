@@ -42,5 +42,9 @@ namespace LocalizationHelper.Core.IElements.Code {
 		public List<IDLineDefinition> GetAllDefs() {
 			return new List<IDLineDefinition> { this };
 		}
+
+		public string GetFullyQualifiedName() {
+			return Parent is not null ? Parent.GetFullyQualifiedName() + "." + Name : "ERROR";
+		}
 	}
 }

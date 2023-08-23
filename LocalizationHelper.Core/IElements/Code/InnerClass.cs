@@ -19,9 +19,9 @@ namespace LocalizationHelper.Core.IElements.Code {
 		public InnerClass(ClassFile classFile, ref int i, string[] lines, InnerClass? parent = null) {
 			firstLine = lines[i];
 			Name = firstLine.Split(":")[0]
-							.Trim()
-							.Replace("public class ", "")
-							.Replace(" {", "");
+				.Trim()
+				.Replace("public class ", "")
+				.Replace(" {", "");
 			i++;
 			ClassFile = classFile;
 			Parent = parent;
@@ -42,7 +42,7 @@ namespace LocalizationHelper.Core.IElements.Code {
 		}
 
 		public ClassFile ClassFile { get; }
-		
+
 		public InnerClass? Parent { get; }
 		public string Name { get; }
 		public List<ICodeElement> Internals { get; } = new();
@@ -55,7 +55,7 @@ namespace LocalizationHelper.Core.IElements.Code {
 			ret = Internals.OfType<IDLineDefinition>().Concat(ret);
 
 			ret = Internals.OfType<InnerClass>().SelectMany(s => s.FindAllDefinitions())
-						   .Concat(ret);
+				.Concat(ret);
 
 			return ret;
 		}
@@ -68,11 +68,15 @@ namespace LocalizationHelper.Core.IElements.Code {
 
 		public IEnumerable<InnerClass> GetAllInnerClasses() {
 			return Internals.OfType<InnerClass>()
-							.SelectMany(s => s.GetAllInnerClasses()).Concat(new[] { this });
+				.SelectMany(s => s.GetAllInnerClasses()).Concat(new[] { this });
 		}
 
 		public List<IDLineDefinition> GetAllDefs() {
 			return Internals.SelectMany(s => s.GetAllDefs()).ToList();
+		}
+
+		public string GetFullyQualifiedName() {
+			return Parent is not null ? Parent.GetFullyQualifiedName() + "." + Name : Name;
 		}
 	}
 }

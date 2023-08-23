@@ -9,8 +9,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Input;
+using Humanizer;
 using LocalizationHelper.Core.IElements.Text;
+using TextCopy;
 
 namespace LocalizationHelper.WPF.ViewModel;
 
@@ -30,6 +33,7 @@ public class MainWindowVM : BaseViewModel {
 
 	public ICommand AddAboveCommand { get; }
 	public ICommand AddBelowCommand { get; }
+	public ICommand CreateCodeCommand { get; }
 
 	[Notify]
 	public ICommand ActionCommand { get; set; }
@@ -47,7 +51,7 @@ public class MainWindowVM : BaseViewModel {
 	[Notify]
 	public Localizable ActiveLocalizable { get; set; }
 
-	private InnerClass activeInnerClass;
+	public InnerClass ActiveInnerClass { get; set; }
 
 	private const string CONFIG_PATH = "private/locales.txt";
 
@@ -60,6 +64,7 @@ public class MainWindowVM : BaseViewModel {
 		ActionCommand = new Command(DoAction);
 		AddAboveCommand = new Command(AddAboveAction);
 		AddBelowCommand = new Command(AddBelowAction);
+		CreateCodeCommand = new Command(CreateCodeAction);
 		LocalizableClickCommand = new Command(LocalizableClickAction);
 		SubclassClickCommand = new Command(SubclassClickAction);
 		SaveCommand = new Command(SaveAction);
@@ -95,15 +100,15 @@ public class MainWindowVM : BaseViewModel {
 	}
 
 	public void SubclassClickAction(object value) {
-		activeInnerClass = (InnerClass)value;
-		OutputText = localizationCore.Handle("sc " + activeInnerClass.Name);
-		LocalizedTexts = activeInnerClass.Internals.OfType<IDLineDefinition>()
+		ActiveInnerClass = (InnerClass)value;
+		OutputText = localizationCore.Handle("sc " + ActiveInnerClass.Name);
+		LocalizedTexts = ActiveInnerClass.Internals.OfType<IDLineDefinition>()
 			.Select(s => new DataGridItemVM() {
 				PropertyName = s,
 				Localizations = ActiveLocalizable.LangFiles
 					.ToDictionary(k => k.Key,
 								  v => v.Value.GetAllDefs().SingleOrDefault(ss => ss.ID == s.ID) ??
-									   new IDLineLocalization(ActiveLocalizable.GetLangSectionForInnerClass(activeInnerClass, v.Key), s.ID ?? 0, ""))
+									   new IDLineLocalization(ActiveLocalizable.GetLangSectionForInnerClass(ActiveInnerClass, v.Key), s.ID ?? 0, ""))
 			})
 			.ToObservable();
 	}
@@ -118,6 +123,36 @@ public class MainWindowVM : BaseViewModel {
 		DataGridItemVM row = (DataGridItemVM)item;
 		int idx = LocalizedTexts.IndexOf(row);
 		CreateNewEntry(idx + 1, row.PropertyName, false, "");
+	}
+	
+	private void CreateCodeAction(object _) {
+		StringBuilder sb = new();
+		sb.AppendLine("#region Localization");
+		sb.AppendLine();
+		sb.AppendLine("[Notify]");
+		sb.AppendLine("public Locale L { get; } = new();");
+		sb.AppendLine();
+		sb.AppendLine("public class Locale {");
+		sb.AppendLine("public LocaleProvider L => LocaleProvider.Instance;");
+
+		foreach (IDLineDefinition def in ActiveInnerClass.GetAllDefs()) {
+			sb.Append("public string ");
+
+			sb.Append(def.Name.ToLower().Pascalize());
+
+			sb.Append(" => L.Get(");
+
+			sb.Append(def.GetFullyQualifiedName());
+
+			sb.Append(");");
+			sb.AppendLine();
+		}
+
+		sb.AppendLine("}");
+		sb.AppendLine();
+		sb.AppendLine("#endregion");
+		
+		new Clipboard().SetText(sb.ToString());
 	}
 
 	private void SearchAction(object _) {
@@ -145,21 +180,21 @@ public class MainWindowVM : BaseViewModel {
 	#endregion
 
 	public void CreateNewEntry(int index, IDLineDefinition it, bool above, string content) {
-		int classIndex = GetActualIndex(index, it, activeInnerClass);
-		IDLineDefinition newDef = new(ActiveLocalizable.ClassFile, content, GetID(), activeInnerClass);
-		activeInnerClass.Internals.Insert(classIndex, newDef);
+		int classIndex = GetActualIndex(index, it, ActiveInnerClass);
+		IDLineDefinition newDef = new(ActiveLocalizable.ClassFile, content, GetID(), ActiveInnerClass);
+		ActiveInnerClass.Internals.Insert(classIndex, newDef);
 		DataGridItemVM toInsert = new() {
 			PropertyName = newDef,
 			Localizations = ActiveLocalizable.LangFiles.Values
 				.ToDictionary(k => k.FileName,
 							  v => {
-								  LangSection section = ActiveLocalizable.GetLangSectionForInnerClass(activeInnerClass, v.FileName);
+								  LangSection section = ActiveLocalizable.GetLangSectionForInnerClass(ActiveInnerClass, v.FileName);
 								  if (section is null) {
 									  ActiveLocalizable.LangFiles.ForEach(f => {
-										  f.Value.Sections.Add(new LangSection(f.Value, "#" + activeInnerClass.Name));
+										  f.Value.Sections.Add(new LangSection(f.Value, "#" + ActiveInnerClass.Name));
 									  });
 								  }
-								  section = ActiveLocalizable.GetLangSectionForInnerClass(activeInnerClass, v.FileName);
+								  section = ActiveLocalizable.GetLangSectionForInnerClass(ActiveInnerClass, v.FileName);
 								  IDLineLocalization loc = new (section, newDef.ID ?? 0, "");
 								  section.Definitions.Insert(Math.Min(section.Definitions.Count, index), loc);
 								  return loc;

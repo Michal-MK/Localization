@@ -13,6 +13,9 @@ namespace LocalizationHelper.Core.IElements.Code {
 		public int IndentLevel { get; private set; }
 
 		public string Indent => new('\t', IndentLevel);
+		
+		public InnerClass RootClass { get; set; }
+
 
 		public static ClassFile Parse(string path) {
 			ClassFile ret = new(path);
@@ -24,11 +27,12 @@ namespace LocalizationHelper.Core.IElements.Code {
 
 			for (int i = 0; i < lines.Length; i++) {
 				if (lines[i].TrimStart().StartsWith("public const int ")) {
-					ret.Internals.Add(new IDLineDefinition(ret, lines[i], null));
+					ret.Internals.Add(new IDLineDefinition(ret, lines[i], ret.RootClass));
 				}
 				else if (lines[i].TrimStart().StartsWith("public class ") || lines[i].TrimStart().StartsWith("public static class ")) {
 					gotClass = true;
-					ret.Internals.Add(new InnerClass(ret, ref i, lines, null));
+					ret.RootClass = new InnerClass(ret, ref i, lines, null);
+					ret.Internals.Add(ret.RootClass);
 				}
 				else if (lines[i].Trim() == "}") {
 					ret.Internals.Add(new StdLine(lines[i]));

@@ -48,7 +48,8 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate d:DataType="elem:InnerClass">
                             <RadioButton Style="{StaticResource {x:Type ToggleButton}}" Content="{Binding Name}" GroupName="Subclasses"
-                                         Command="{Binding ElementName=Root, Path=DataContext.SubclassClickCommand}" CommandParameter="{Binding}"/>
+                                         Command="{Binding ElementName=Root, Path=DataContext.SubclassClickCommand}" CommandParameter="{Binding}"
+                                         Loaded="FrameworkElement_OnLoaded"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

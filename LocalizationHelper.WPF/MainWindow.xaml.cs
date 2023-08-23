@@ -68,4 +68,13 @@ public partial class MainWindow : Window {
 			}
 		};
 	}
+
+	private void FrameworkElement_OnLoaded(object sender, RoutedEventArgs e) {
+		RadioButton it = (RadioButton)sender;
+		it.ContextMenu = new ContextMenu {
+			Items = {
+				new MenuItem() { Header = "Copy Code", Command = Context.CreateCodeCommand },
+			}
+		};
+	}
 }
